@@ -18,6 +18,10 @@ package io.netty.example.echo;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handler implementation for the echo server.
@@ -25,13 +29,27 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 @Sharable
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
+    Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
+
+    AtomicInteger i = new AtomicInteger(0);
+    int total = 0;
+    long time = System.currentTimeMillis();
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        logger.debug("channelRead i:{}", i.getAndIncrement());
+        long cost = System.currentTimeMillis() - time;
+        if (cost > 1000L) {
+            logger.info("channelRead cost:{}ms, tps:{}", cost, (i.get() - total) / cost * 1000);
+            time = System.currentTimeMillis();
+            total = i.get();
+        }
         ctx.write(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
+        logger.debug("channelReadComplete i:{}", i.getAndIncrement());
         ctx.flush();
     }
 
