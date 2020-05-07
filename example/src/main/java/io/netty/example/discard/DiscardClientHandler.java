@@ -20,17 +20,22 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles a client-side channel.
  */
 public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
+    Logger logger = LoggerFactory.getLogger(DiscardClientHandler.class);
+
     private ByteBuf content;
     private ChannelHandlerContext ctx;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        logger.info("channelActive ctx:{}", ctx.name());
         this.ctx = ctx;
 
         // Initialize the message.
@@ -42,16 +47,19 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        logger.info("channelInactive ctx:{}", ctx.name());
         content.release();
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        logger.info("channelRead0 ctx:{}", ctx.name());
         // Server is supposed to send nothing, but if it sends something, discard it.
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.info("exceptionCaught ctx:{}", ctx.name());
         // Close the connection when an exception is raised.
         cause.printStackTrace();
         ctx.close();
@@ -59,7 +67,14 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     long counter;
 
+    /**
+     * 源源不断的消息生产
+     * 当发送完成一个分片后，马上发送下一个分片。
+     *
+     * 非递归实现，而是通过监听器实现。
+     */
     private void generateTraffic() {
+        logger.info("generateTraffic");
         // Flush the outbound buffer to the socket.
         // Once flushed, generate the same amount of traffic again.
         ctx.writeAndFlush(content.retainedDuplicate()).addListener(trafficGenerator);
@@ -68,9 +83,14 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
     private final ChannelFutureListener trafficGenerator = new ChannelFutureListener() {
         @Override
         public void operationComplete(ChannelFuture future) {
+
             if (future.isSuccess()) {
-                generateTraffic();
+                logger.info("operationComplete success, future:{}", future);
+                if (++counter < 10) {
+                    generateTraffic();
+                }
             } else {
+                logger.info("operationComplete fail, future:{}", future);
                 future.cause().printStackTrace();
                 future.channel().close();
             }

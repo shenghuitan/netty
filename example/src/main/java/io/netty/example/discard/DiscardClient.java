@@ -29,6 +29,8 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 /**
  * Keeps sending random data to the specified address.
+ *
+ * 不断给服务端发送随机数据，测试大批量的数据传输。
  */
 public final class DiscardClient {
 
