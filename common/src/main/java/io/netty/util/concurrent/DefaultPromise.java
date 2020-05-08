@@ -464,12 +464,26 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     /**
      * Notify a listener that a future has completed.
+     *
+     * 通知监听器listener，future已经执行完成。
      * <p>
      * This method has a fixed depth of {@link #MAX_LISTENER_STACK_DEPTH} that will limit recursion to prevent
      * {@link StackOverflowError} and will stop notifying listeners added after this threshold is exceeded.
+     *
+     * 此方法有一个固定的监听堆栈深度MAX_LISTENER_STACK_DEPTH，用来限制递归，以避免StackOverflowError的发生，和将停止
+     * 通知在超过阈值之后添加的监听器。
+     *
+     * NOTE
+     * 当future完成后，eventExecutor执行listener的事件，输入源从future获取。
+     *
      * @param eventExecutor the executor to use to notify the listener {@code listener}.
+     *                      事件执行器，用于通知监听器
+     *
      * @param future the future that is complete.
+     *               完成future实例
+     *
      * @param listener the listener to notify.
+     *                 待通知的监听器
      */
     protected static void notifyListener(
             EventExecutor eventExecutor, final Future<?> future, final GenericFutureListener<?> listener) {
@@ -481,15 +495,23 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     private void notifyListeners() {
         EventExecutor executor = executor();
+        // 当前线程，只能被指定的EventExecutor调用
+        // 因为线程和Future绑定了一起？或者说，每一个线程绑定了一个Future，要正确调用返回，必须召回线程和Future的绑定关系？
+        // 线程在一开始的时候，和EventLoop是绑定了在一起的。
+        // 一般情况下，当前线程的执行，是在EventLoop中执行。
+        // 但意外？的情况下，可以脱离了EventLoop，这时候，就。。。
+
+        // 不对，EventLoop的判断，只是为了能在EventLoop中设置更多的规则和参数。
+        // 若当前线程非绑定的EventLoop，则做与EventLoop无关的线程调度执行，即直接放入到executor执行即可。
         if (executor.inEventLoop()) {
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
             final int stackDepth = threadLocals.futureListenerStackDepth();
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                threadLocals.setFutureListenerStackDepth(stackDepth + 1);
+                threadLocals.setFutureListenerStackDepth(stackDepth + 1);   // 设置EventLoop关联的参数，可以是Future等
                 try {
-                    notifyListenersNow();
+                    notifyListenersNow();   // 实际执行
                 } finally {
-                    threadLocals.setFutureListenerStackDepth(stackDepth);
+                    threadLocals.setFutureListenerStackDepth(stackDepth);   // 设置EventLoop关联的参数，可以是Future等
                 }
                 return;
             }
@@ -498,7 +520,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         safeExecute(executor, new Runnable() {
             @Override
             public void run() {
-                notifyListenersNow();
+                notifyListenersNow();   // 实际执行
             }
         });
     }

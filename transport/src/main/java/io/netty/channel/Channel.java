@@ -78,11 +78,14 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
 
     /**
      * Returns the globally unique identifier of this {@link Channel}.
+     * 返回当前Channel全局唯一的标识符
      */
     ChannelId id();
 
     /**
      * Return the {@link EventLoop} this {@link Channel} was registered to.
+     *
+     * 返回当前Channel注册的EventLoop。
      */
     EventLoop eventLoop();
 
@@ -101,16 +104,19 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
 
     /**
      * Returns {@code true} if the {@link Channel} is open and may get active later
+     * 返回true，若当前Channel是打开的，可能将被获取是否active的状态。
      */
     boolean isOpen();
 
     /**
      * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
+     * 返回true，若当前Channel已注册到EventLoop。
      */
     boolean isRegistered();
 
     /**
      * Return {@code true} if the {@link Channel} is active and so connected.
+     * 返回true，如果当前Channel是活着的，以被连接。
      */
     boolean isActive();
 
@@ -125,6 +131,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * type such as {@link InetSocketAddress} to retrieve the detailed
      * information.
      *
+     * 返回当前channel绑定的本地地址。
+     * 返回的SocketAddress将被假定可以向下转型为更多的具体类型，如InetSocketAddress，以找到详细信息。
+     *
      * @return the local address of this channel.
      *         {@code null} if this channel is not bound.
      */
@@ -135,6 +144,8 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * returned {@link SocketAddress} is supposed to be down-cast into more
      * concrete type such as {@link InetSocketAddress} to retrieve the detailed
      * information.
+     * 返回当前channel连接的远程地址。
+     * 返回的SocketAddress将被假定向下转型为更多的具体的类型，如：InetSocketAddress，来找回详细信息。
      *
      * @return the remote address of this channel.
      *         {@code null} if this channel is not connected.
@@ -143,12 +154,19 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *         use {@link DatagramPacket#recipient()} to determine
      *         the origination of the received message as this method will
      *         return {@code null}.
+     *         返回channel的远程地址。
+     *         若此channel没有被连接，则返回null。
+     *         如果channel没有被连接，但可以收到消息，从任意的远程地址（如：DatagramChannel使用 DatagramPacket#recepient方法）
+     *         确定到接收消息的源头的这种方法，将返回null。
      */
     SocketAddress remoteAddress();
 
     /**
      * Returns the {@link ChannelFuture} which will be notified when this
      * channel is closed.  This method always returns the same future instance.
+     *
+     * 返回将被通知的ChannelFuture，当此channel被关闭的时候。这个方法永远返回相同的future实例。
+     * 即，每一个close的ChannelFuture都是相同的实例。
      */
     ChannelFuture closeFuture();
 
@@ -157,6 +175,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * requested write operation immediately.  Any write requests made when
      * this method returns {@code false} are queued until the I/O thread is
      * ready to process the queued write requests.
+     *
+     * 返回true，当且仅当I/O线程将立即进入写请求操作。任何写请求进来，当此方法返回false时，这些请求将放入到队列，
+     * 直到I/O线程准备好处理这些写请求的队列。
      */
     boolean isWritable();
 

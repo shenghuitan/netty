@@ -22,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A skeletal {@link Future} implementation which represents a {@link Future} which has been completed already.
+ *
+ * 一个框架的Future实现，代表了已被执行完成的Future。
+ * 完成执行的Future的基础实现抽象类。
  */
 public abstract class CompleteFuture<V> extends AbstractFuture<V> {
 
@@ -30,7 +33,10 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
     /**
      * Creates a new instance.
      *
+     * 创建一个CompleteFuture实例
+     *
      * @param executor the {@link EventExecutor} associated with this future
+     *                 关联到此future的事件执行器EventExecutor
      */
     protected CompleteFuture(EventExecutor executor) {
         this.executor = executor;
@@ -38,6 +44,8 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
 
     /**
      * Return the {@link EventExecutor} which is used by this {@link CompleteFuture}.
+     *
+     * 返回关联到了此CompleteFuture的事件执行器EventExecutor
      */
     protected EventExecutor executor() {
         return executor;
