@@ -20,6 +20,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,48 +32,73 @@ import java.util.concurrent.TimeUnit;
 @Sharable
 public class UptimeClientHandler extends SimpleChannelInboundHandler<Object> {
 
+    Logger logger = LoggerFactory.getLogger(UptimeClientHandler.class);
+
     long startTime = -1;
 
+    /**
+     * 1
+     * @param ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         if (startTime < 0) {
             startTime = System.currentTimeMillis();
         }
-        println("Connected to: " + ctx.channel().remoteAddress());
+        logger.info("channelActive Connected to: " + ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         // Discard received data
+        logger.info("channelRead0 msg:{}", msg);
     }
 
+    /**
+     * 2
+     * @param ctx
+     * @param evt
+     */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if (!(evt instanceof IdleStateEvent)) {
+            logger.info("userEventTriggered not IdleStateEvent, evt:{}", evt);
             return;
         }
 
         IdleStateEvent e = (IdleStateEvent) evt;
         if (e.state() == IdleState.READER_IDLE) {
             // The connection was OK but there was no traffic for last period.
-            println("Disconnecting due to no inbound traffic");
+            logger.info("userEventTriggered Disconnecting due to no inbound traffic");
             ctx.close();
         }
     }
 
+    /**
+     * 3
+     * @param ctx
+     */
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) {
-        println("Disconnected from: " + ctx.channel().remoteAddress());
+        logger.info("channelInactive Disconnected from: " + ctx.channel().remoteAddress());
     }
 
+    /**
+     * 4
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelUnregistered(final ChannelHandlerContext ctx) throws Exception {
-        println("Sleeping for: " + UptimeClient.RECONNECT_DELAY + 's');
+        logger.info("channelUnregistered Sleeping for: " + UptimeClient.RECONNECT_DELAY + 's');
 
         ctx.channel().eventLoop().schedule(new Runnable() {
+            /**
+             * 5 -> 1
+             */
             @Override
             public void run() {
-                println("Reconnecting to: " + UptimeClient.HOST + ':' + UptimeClient.PORT);
+                logger.info("channelUnregistered schedule Reconnecting to: " + UptimeClient.HOST + ':' + UptimeClient.PORT);
                 UptimeClient.connect();
             }
         }, UptimeClient.RECONNECT_DELAY, TimeUnit.SECONDS);

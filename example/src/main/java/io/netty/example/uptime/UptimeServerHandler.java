@@ -18,12 +18,23 @@ package io.netty.example.uptime;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Sharable
 public class UptimeServerHandler extends SimpleChannelInboundHandler<Object> {
+
+    Logger logger = LoggerFactory.getLogger(UptimeServerHandler.class);
+
+    AtomicInteger i = new AtomicInteger(0);
+
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+        logger.info("channelRead0 i:{}, msg:{}", i.getAndIncrement(), msg);
         // discard
+
     }
 
     @Override
