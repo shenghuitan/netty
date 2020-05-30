@@ -765,6 +765,8 @@ public final class ByteBufUtil {
     /**
      * Encode the given {@link CharBuffer} using the given {@link Charset} into a new {@link ByteBuf} which
      * is allocated via the {@link ByteBufAllocator}.
+     *
+     * 将传入的CharBuffer使用传入的Charset编码到一个新的ByteBuf中，此ByteBuf通过ByteBufAllocator分配。
      */
     public static ByteBuf encodeString(ByteBufAllocator alloc, CharBuffer src, Charset charset) {
         return encodeString0(alloc, false, src, charset, 0);

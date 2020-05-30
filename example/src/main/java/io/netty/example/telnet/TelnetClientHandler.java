@@ -18,6 +18,8 @@ package io.netty.example.telnet;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles a client-side channel.
@@ -25,13 +27,16 @@ import io.netty.channel.SimpleChannelInboundHandler;
 @Sharable
 public class TelnetClientHandler extends SimpleChannelInboundHandler<String> {
 
+    private Logger logger = LoggerFactory.getLogger(TelnetClientHandler.class);
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        System.err.println(msg);
+        logger.info("channelRead0 ctx:{}, msg:{}", ctx, msg);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.info("exceptionCaught ctx:{}", ctx);
         cause.printStackTrace();
         ctx.close();
     }

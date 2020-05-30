@@ -72,6 +72,9 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
     /**
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
      * {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
+     *
+     * 返回true，如果传入的消息可以被处理。
+     * 返回false，如果不能被处理，它将传递给下一个在ChannelPipeline里的ChannelInboundHandler。
      */
     public boolean acceptInboundMessage(Object msg) throws Exception {
         return matcher.match(msg);

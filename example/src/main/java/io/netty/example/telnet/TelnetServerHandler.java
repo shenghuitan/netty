@@ -20,6 +20,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.util.Date;
@@ -30,8 +32,11 @@ import java.util.Date;
 @Sharable
 public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
+    private Logger logger = LoggerFactory.getLogger(TelnetServerHandler.class);
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("channelActive ctx:{}", ctx);
         // Send greeting for a new connection.
         ctx.write("Welcome to " + InetAddress.getLocalHost().getHostName() + "!\r\n");
         ctx.write("It is " + new Date() + " now.\r\n");
@@ -40,6 +45,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String request) throws Exception {
+        logger.info("channelRead0 ctx:{}, request:{}", ctx, request);
         // Generate and write a response.
         String response;
         boolean close = false;
@@ -65,11 +71,13 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
+        logger.info("channelReadComplete ctx:{}", ctx);
         ctx.flush();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.info("exceptionCaught ctx:{}", ctx);
         cause.printStackTrace();
         ctx.close();
     }

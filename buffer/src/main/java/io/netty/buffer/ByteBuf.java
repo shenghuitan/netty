@@ -2403,9 +2403,14 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
      *
+     * 解码缓冲区可读的字节为指定的字符编码的字符串。此方法等价于
+     * buf.toString(buf.readerIndex(), buf.readableBytes(), charsetName)}。
+     * 此方法的调用不会改变缓冲区的readerIndex或writerIndex。
+     *
      * @throws UnsupportedCharsetException
      *         if the specified character set name is not supported by the
      *         current VM
+     *         如果指定的字符编码不被当前VM支持。
      */
     public abstract String toString(Charset charset);
 

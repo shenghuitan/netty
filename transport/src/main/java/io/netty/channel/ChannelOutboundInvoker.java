@@ -77,12 +77,19 @@ public interface ChannelOutboundInvoker {
      * either because the operation was successful or because of
      * an error.
      *
+     * 请求关闭Channel，并且通知到ChannelFuture操作已完成，当操作可能成功或失败的时候。
+     *
      * After it is closed it is not possible to reuse it again.
+     *
+     * 在关闭之后，不可能再次重用。
+     *
      * <p>
      * This will result in having the
      * {@link ChannelOutboundHandler#close(ChannelHandlerContext, ChannelPromise)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * 结果在被下一个ChannelOutboundHandler调用close方法，包含在Channel的ChannelPipeline中。
      */
     ChannelFuture close();
 
