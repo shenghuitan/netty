@@ -23,6 +23,9 @@ import io.netty.util.concurrent.EventExecutorGroup;
  *
  * 特殊的EventExecutorGroup，将允许注册Channels，在后面的事件循环中，被选择处理。
  *
+ * NOTE EventExecutorGroup类似线程池，EventLoopGroup才真正关联了Channel，即EventLoopGroup是与
+ * IO相关的，而EventExecutorGroup是IO无关的。
+ *
  */
 public interface EventLoopGroup extends EventExecutorGroup {
     /**
@@ -36,18 +39,27 @@ public interface EventLoopGroup extends EventExecutorGroup {
     /**
      * Register a {@link Channel} with this {@link EventLoop}. The returned {@link ChannelFuture}
      * will get notified once the registration was complete.
+     *
+     * 当前实例是一个 EventLoop，使用当前EventLoop来注册一个Channel。它返回的ChannelFuture将被通知，当注册
+     * 完成时。
+     *
      */
     ChannelFuture register(Channel channel);
 
     /**
      * Register a {@link Channel} with this {@link EventLoop} using a {@link ChannelFuture}. The passed
      * {@link ChannelFuture} will get notified once the registration was complete and also will get returned.
+     *
+     * 使用当前的EventLoop来注册一个Channel，Channel归属于传入的ChannelFuture中。传入的ChannelFuture将得到通知，
+     * 当注册完成后，并且把传入的ChannelFuture返回。
      */
     ChannelFuture register(ChannelPromise promise);
 
     /**
      * Register a {@link Channel} with this {@link EventLoop}. The passed {@link ChannelFuture}
      * will get notified once the registration was complete and also will get returned.
+     *
+     * 使用当前EventLoop注册一个Channel。传入的ChannelFuture将得到一个通知，在完成的时候，且被返回。
      *
      * @deprecated Use {@link #register(ChannelPromise)} instead.
      */
