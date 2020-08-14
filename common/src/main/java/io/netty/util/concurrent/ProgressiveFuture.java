@@ -18,6 +18,9 @@ package io.netty.util.concurrent;
 
 /**
  * A {@link Future} which is used to indicate the progress of an operation.
+ *
+ * Future用来指明操作的进展。
+ * 这里作为Future的子类，只是显式把返回值向下转型返回。
  */
 public interface ProgressiveFuture<V> extends Future<V> {
 
