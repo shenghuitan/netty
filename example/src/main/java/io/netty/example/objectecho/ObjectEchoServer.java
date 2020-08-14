@@ -34,6 +34,8 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 
 /**
  * Modification of {@link EchoServer} which utilizes Java object serialization.
+ *
+ * 利用Java对象序列化，修改EchoServer
  */
 public final class ObjectEchoServer {
 
