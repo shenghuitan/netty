@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Default implementation which uses simple round-robin to choose next {@link EventExecutor}.
+ *
+ * 默认的简单轮询EventExecutor选择器的实现。
+ * 普通和二次方的选择器，在算法上，没有任何区别。
  */
 @UnstableApi
 public final class DefaultEventExecutorChooserFactory implements EventExecutorChooserFactory {
@@ -39,10 +42,18 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         }
     }
 
+    /**
+     * 是否2的次方
+     * @param val   指定值
+     * @return
+     */
     private static boolean isPowerOfTwo(int val) {
         return (val & -val) == val;
     }
 
+    /**
+     * 与通用的轮询没有区别，仅仅是因为2次方可以通过按位与选择EventExecutor。
+     */
     private static final class PowerOfTwoEventExecutorChooser implements EventExecutorChooser {
         private final AtomicInteger idx = new AtomicInteger();
         private final EventExecutor[] executors;
@@ -57,6 +68,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
         }
     }
 
+    /**
+     * 简单的自增序号取模轮询
+     */
     private static final class GenericEventExecutorChooser implements EventExecutorChooser {
         private final AtomicInteger idx = new AtomicInteger();
         private final EventExecutor[] executors;

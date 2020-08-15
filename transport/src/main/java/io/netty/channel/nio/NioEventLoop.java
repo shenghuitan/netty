@@ -33,10 +33,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.Selector;
-import java.nio.channels.SelectionKey;
+import java.nio.channels.*;
 
 import java.nio.channels.spi.SelectorProvider;
 import java.security.AccessController;
@@ -53,6 +50,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@link SingleThreadEventLoop} implementation which register the {@link Channel}'s to a
  * {@link Selector} and so does the multi-plexing of these in the event loop.
  *
+ * 多路复用、事件循环
+ *
+ * SingleThreadEventLoop的实现类，它注册Channels到Selector中。因此实现了事件循环的多路复用。
  */
 public final class NioEventLoop extends SingleThreadEventLoop {
 
@@ -60,12 +60,18 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     private static final int CLEANUP_INTERVAL = 256; // XXX Hard-coded value, but won't need customization.
 
+    // 禁止key set优化，默认false
     private static final boolean DISABLE_KEY_SET_OPTIMIZATION =
             SystemPropertyUtil.getBoolean("io.netty.noKeySetOptimization", false);
 
+    // 最早的选择器返回
     private static final int MIN_PREMATURE_SELECTOR_RETURNS = 3;
+
+    // 选择器自动重建阈值，Netty默认是512
     private static final int SELECTOR_AUTO_REBUILD_THRESHOLD;
 
+    // 供应商角色：提供当前可处理的key的个数
+    // accept、connect、read、write
     private final IntSupplier selectNowSupplier = new IntSupplier() {
         @Override
         public int get() throws Exception {
@@ -78,6 +84,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     // See:
     // - http://bugs.sun.com/view_bug.do?bug_id=6427854
     // - https://github.com/netty/netty/issues/203
+    // 在类sun.nio.ch.Util.atBugLevel中发现了以下代码：
+    // (String)AccessController.doPrivileged(new GetPropertyAction("sun.nio.ch.bugLevel"));
     static {
         final String key = "sun.nio.ch.bugLevel";
         final String bugLevel = SystemPropertyUtil.get(key);
@@ -86,6 +94,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     @Override
                     public Void run() {
+                        // TODO 这里为什么要设置sun.nio.ch.bugLevel这个key到系统变量中？
+                        // 看起来是告诉sun.nio.ch.SelectorImpl，这个bug已经被修复了
                         System.setProperty(key, "");
                         return null;
                     }
@@ -111,8 +121,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     /**
      * The NIO {@link Selector}.
      */
-    private Selector selector;
-    private Selector unwrappedSelector;
+    private Selector selector;  // 替换了selectedKeys属性的sun.nio.ch.SelectorImpl的引用
+    private Selector unwrappedSelector; // 原生的provider.openSelector()
     private SelectedSelectionKeySet selectedKeys;
 
     private final SelectorProvider provider;
@@ -132,6 +142,16 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private int cancelledKeys;
     private boolean needsToSelectAgain;
 
+    /**
+     *
+     * @param parent    父事件循环组，一般来说，会调用这个构造器来生成子节点的，也就只有父节点了。
+     *                  所以parent参数的传入参数值，一般是this，即父节点本身。
+     * @param executor  如果没有特别指定用哪个Executor来执行Event，则默认使用ThreadPerTaskExecutor。
+     * @param selectorProvider  一般来说，是SelectorProvider.provider()
+     * @param strategy  选择策略，一般来说，当有任务需要执行的时候，采用非阻塞的select策略，否则采用阻塞的select任务策略
+     * @param rejectedExecutionHandler  默认的拒绝执行策略，就是直接抛出RejectedExecutionException
+     * @param queueFactory  Task队列工厂实例，默认实现是返回LinkedBlockingQueue
+     */
     NioEventLoop(NioEventLoopGroup parent, Executor executor, SelectorProvider selectorProvider,
                  SelectStrategy strategy, RejectedExecutionHandler rejectedExecutionHandler,
                  EventLoopTaskQueueFactory queueFactory) {
@@ -167,16 +187,21 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * NOTE 这是一个需要重点拆解的方法！
+     * NOTE 为什么需要在原生Selector的基础上，包装一个新的Selector？
+     * @return
+     */
     private SelectorTuple openSelector() {
-        final Selector unwrappedSelector;
+        final Selector unwrappedSelector;   // 未包装的Selector，即java.nio原生的Selector
         try {
-            unwrappedSelector = provider.openSelector();
+            unwrappedSelector = provider.openSelector();    // 原生打开一个Selector
         } catch (IOException e) {
             throw new ChannelException("failed to open a new selector", e);
         }
 
-        if (DISABLE_KEY_SET_OPTIMIZATION) {
-            return new SelectorTuple(unwrappedSelector);
+        if (DISABLE_KEY_SET_OPTIMIZATION) { // 默认值：false
+            return new SelectorTuple(unwrappedSelector);    // 返回Selector二元组，元素同为原生Selector
         }
 
         Object maybeSelectorImplClass = AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -184,15 +209,19 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             public Object run() {
                 try {
                     return Class.forName(
-                            "sun.nio.ch.SelectorImpl",
-                            false,
-                            PlatformDependent.getSystemClassLoader());
+                            "sun.nio.ch.SelectorImpl",  // 加载类SelectorImpl
+                            false,                      // 未执行类的初始化
+                            PlatformDependent.getSystemClassLoader());  // ClassLoader.getSystemClassLoader()
                 } catch (Throwable cause) {
                     return cause;
                 }
             }
         });
 
+        // 确保通过sun.nio.ch.SelectorImpl加载的类，是java.nio.channels.Selector的子类。
+        // 若非其子类，则把第二元置为原生Selector返回。
+
+        // NOTE 看起来是想拿到抽象类Selector的真正实现类，是期望向下转型，做什么特殊的优化操作？
         if (!(maybeSelectorImplClass instanceof Class) ||
             // ensure the current selector implementation is what we can instrument.
             !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())) {
@@ -203,14 +232,20 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             return new SelectorTuple(unwrappedSelector);
         }
 
+        // 到这里，可以确认抽象类sun.nio.ch.SelectorImpl是存在的，并且是抽象类java.nio.channels.Selector的子类了。
+
         final Class<?> selectorImplClass = (Class<?>) maybeSelectorImplClass;
         final SelectedSelectionKeySet selectedKeySet = new SelectedSelectionKeySet();
 
+        // 在sun域下的代码执行，可能需要获取特权来执行
         Object maybeException = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
                 try {
+                    // protected Set<SelectionKey> selectedKeys = new HashSet();
                     Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
+
+                    // private Set<SelectionKey> publicSelectedKeys;
                     Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
 
                     if (PlatformDependent.javaVersion() >= 9 && PlatformDependent.hasUnsafe()) {
@@ -239,6 +274,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         return cause;
                     }
 
+                    // 原生的Selector并没有暴露selectedKeys和publicSelectedKeys这两个属性。
+                    // 这里通过把Netty自定义的这两个同类型的属性，替换到Selector的对应的属性引用上。
+                    // 这就相当于Netty把Selector实现的这两个属性的引用拿到了，突破了权限的限制。
+                    // 这为后续Netty的自定义操作预设了空间。
                     selectedKeysField.set(unwrappedSelector, selectedKeySet);
                     publicSelectedKeysField.set(unwrappedSelector, selectedKeySet);
                     return null;
@@ -256,8 +295,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             logger.trace("failed to instrument a special java.util.Set into: {}", unwrappedSelector, e);
             return new SelectorTuple(unwrappedSelector);
         }
+
+        // NOTE 这里相当于把sun.nio.ch.SelectorImpl的selectedKeys属性的引用缓存起来了。
         selectedKeys = selectedKeySet;
         logger.trace("instrumented a special java.util.Set into: {}", unwrappedSelector);
+
+        // 返回包装原生的Selector，和改造过selectedKeys属性的Selector的二元组
         return new SelectorTuple(unwrappedSelector,
                                  new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet));
     }
@@ -794,6 +837,38 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         return unwrappedSelector;
     }
 
+    /**
+     * Selects a set of keys whose corresponding channels are ready for I/O
+     * operations.
+     *
+     * 选择一个keys集合，代表着channels已经准备好的IO操作。
+     *
+     * <p> This method performs a non-blocking <a href="#selop">selection
+     * operation</a>.  If no channels have become selectable since the previous
+     * selection operation then this method immediately returns zero.
+     *
+     * 此方法执行的是一个non-blocking选择操作。如果没有channels拥有可被选择的操作，自从上一次
+     * 的选择操作之后，此方法会马上返回一个0。
+     *
+     * <p> Invoking this method clears the effect of any previous invocations
+     * of the {@link #wakeup wakeup} method.  </p>
+     *
+     * 调用此方法将清空#wakeup方法的唤醒效果。即无论是select和selectNow，对于wakeup来说，
+     * 会产生同等的效果。
+     *
+     * @return  The number of keys, possibly zero, whose ready-operation sets
+     *          were updated by the selection operation
+     *          keys的数量，有可能是0。
+     *          就绪操作的集合会通过选择操作从而被更新。
+     *
+     * @throws  IOException
+     *          If an I/O error occurs
+     *          当IO错误发生时，抛出IOException。
+     *
+     * @throws ClosedSelectorException
+     *          If this selector is closed
+     *          若当前selector被关闭，抛出ClosedSelectorException。
+     */
     int selectNow() throws IOException {
         return selector.selectNow();
     }

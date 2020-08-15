@@ -17,11 +17,17 @@ package io.netty.util;
 
 /**
  * Represents a supplier of {@code int}-valued results.
+ *
+ * 代表一个int值的结果供应商。
  */
 public interface IntSupplier {
 
     /**
      * Gets a result.
+     *
+     * 返回一个值。
+     * NOTE 文件描述符，Socket，进程号等，都只是一个数字。
+     * 这里可以是获取一个Selector，一个Socket，或者一个Pid。
      *
      * @return a result
      */

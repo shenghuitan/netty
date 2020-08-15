@@ -21,9 +21,14 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Set;
 
+/**
+ * Netty自定义的Selector和就绪SelectedKey的绑定关系。
+ *
+ * 重点：同样是继承了Selector，代理模式，或者是组合模式。
+ */
 final class SelectedSelectionKeySetSelector extends Selector {
-    private final SelectedSelectionKeySet selectionKeys;
-    private final Selector delegate;
+    private final SelectedSelectionKeySet selectionKeys;    // 就绪SelectedKey对象
+    private final Selector delegate;    // java.nio原生的Selector
 
     SelectedSelectionKeySetSelector(Selector delegate, SelectedSelectionKeySet selectionKeys) {
         this.delegate = delegate;

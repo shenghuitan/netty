@@ -61,10 +61,19 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     /**
      * Create a new instance.
      *
+     * 创建一个多线程事件执行器组。
+     *
      * @param nThreads          the number of threads that will be used by this instance.
+     *                          此实例将会用到的线程数
+     *
      * @param executor          the Executor to use, or {@code null} if the default should be used.
+     *                          使用的执行器，null则使用默认。
+     *
      * @param chooserFactory    the {@link EventExecutorChooserFactory} to use.
+     *                          EventExecutor选择器工厂对象，用于选择下一个使用的EventExecutor。
+     *
      * @param args              arguments which will passed to each {@link #newChild(Executor, Object...)} call
+     *                          调用#newChild(Executor, Object...)方法的每一个参数
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor,
                                             EventExecutorChooserFactory chooserFactory, Object... args) {
@@ -72,12 +81,15 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
 
+        // 默认为每一个任务，创建一个新的Thread来执行。
         if (executor == null) {
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
+        // Event执行器初始化数组
         children = new EventExecutor[nThreads];
 
+        // 初始化每一个EventExecutor
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
@@ -87,11 +99,14 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 // TODO: Think about if this is a good exception type
                 throw new IllegalStateException("failed to create a child event loop", e);
             } finally {
+                // EventExecutor初始化失败，抛出异常。
+                // 一旦出现任意一个EventExecutor初始化失败，则关闭整个数组的所有EventExecutor。
                 if (!success) {
                     for (int j = 0; j < i; j ++) {
                         children[j].shutdownGracefully();
                     }
 
+                    // 依次等待每一个EventExecutor的关闭
                     for (int j = 0; j < i; j ++) {
                         EventExecutor e = children[j];
                         try {
@@ -108,8 +123,11 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
 
+        // 初始化EventExecutor选择器
         chooser = chooserFactory.newChooser(children);
 
+        // 初始化EventExecutor全部终止的监听器
+        // 当全部都终止后，terminationFuture返回成功
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {
@@ -119,10 +137,13 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         };
 
+        // 为每一个EventExecutor添加一个终止监听器，每一个EventExecutor的终止，都会触发
+        // terminatedChildren + 1。
         for (EventExecutor e: children) {
             e.terminationFuture().addListener(terminationListener);
         }
 
+        // 建立一份EventExecutor数组的只读副本
         Set<EventExecutor> childrenSet = new LinkedHashSet<EventExecutor>(children.length);
         Collections.addAll(childrenSet, children);
         readonlyChildren = Collections.unmodifiableSet(childrenSet);
@@ -154,6 +175,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
      * called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
      *
+     * 创建一个新的EventExecutor，它将在后续通过#next()方法来访问。此方法将被调用，给每一个线程，服务于当前的
+     * MultithreadEventExecutorGroup。
      */
     protected abstract EventExecutor newChild(Executor executor, Object... args) throws Exception;
 

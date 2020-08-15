@@ -19,12 +19,27 @@ import io.netty.util.IntSupplier;
 
 /**
  * Default select strategy.
+ *
+ * 默认SelectStrategy，默认选择策略。
  */
 final class DefaultSelectStrategy implements SelectStrategy {
     static final SelectStrategy INSTANCE = new DefaultSelectStrategy();
 
     private DefaultSelectStrategy() { }
 
+    /**
+     * 如果有任务需要被执行，返回当前select供应器的下一个select值。
+     * 否则默认进入select的阻塞状态。
+     *
+     * @param selectSupplier The supplier with the result of a select result.
+     *                       选择器的提供商，用于提供select的结果。
+     *
+     * @param hasTasks true if tasks are waiting to be processed.
+     *                 true，代表热舞正在等待被处理。
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public int calculateStrategy(IntSupplier selectSupplier, boolean hasTasks) throws Exception {
         return hasTasks ? selectSupplier.get() : SelectStrategy.SELECT;

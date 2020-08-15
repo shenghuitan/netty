@@ -25,17 +25,23 @@ public interface EventExecutorChooserFactory {
 
     /**
      * Returns a new {@link EventExecutorChooser}.
+     *
+     * 按executors构建出EventExecutor选择器，Netty自身支持轮询的方式。
      */
     EventExecutorChooser newChooser(EventExecutor[] executors);
 
     /**
      * Chooses the next {@link EventExecutor} to use.
+     *
+     * 选择下一个使用的EventExecutor。
      */
     @UnstableApi
     interface EventExecutorChooser {
 
         /**
          * Returns the new {@link EventExecutor} to use.
+         *
+         * 返回下一个使用的新的EventExecutor。
          */
         EventExecutor next();
     }

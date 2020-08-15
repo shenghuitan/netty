@@ -33,12 +33,17 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link MultithreadEventLoopGroup} implementations which is used for NIO {@link Selector} based {@link Channel}s.
+ *
+ * MultithreadEventLoopGroup的具体实现，以支持基于Channels的NIO Selector。
  */
 public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     /**
      * Create a new instance using the default number of threads, the default {@link ThreadFactory} and
      * the {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
+     *
+     * 创建一个新实例，使用默认数量的线程数量，默认的ThreadFactory和由SelectorProvider#provider()方法创建
+     * 的SelectorProvider。
      */
     public NioEventLoopGroup() {
         this(0);
@@ -47,6 +52,8 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     /**
      * Create a new instance using the specified number of threads, {@link ThreadFactory} and the
      * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
+     *
+     * 创建一个实例，使用指定的线程数量，ThreadFactory和由SelectorProvider#provider()返回的SelectorProvider。
      */
     public NioEventLoopGroup(int nThreads) {
         this(nThreads, (Executor) null);
@@ -55,6 +62,8 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     /**
      * Create a new instance using the default number of threads, the given {@link ThreadFactory} and the
      * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
+     *
+     * 创建一个实例，使用默认的线程数量，指定的ThreadFactory和由SelectorProvider#provider()返回的SelectorProvider。
      */
     public NioEventLoopGroup(ThreadFactory threadFactory) {
         this(0, threadFactory, SelectorProvider.provider());
@@ -63,6 +72,9 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     /**
      * Create a new instance using the specified number of threads, the given {@link ThreadFactory} and the
      * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
+     *
+     * 创建一个新实例，使用指定的线程数量，和给定的ThreadFactory。
+     * 以及由SelectorProvider#provider()返回的SelectorProvider。
      */
     public NioEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
         this(nThreads, threadFactory, SelectorProvider.provider());
@@ -141,7 +153,9 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
+        // 默认是创建一个LinkedBlockingQueue，存储要执行的Task。
         EventLoopTaskQueueFactory queueFactory = args.length == 4 ? (EventLoopTaskQueueFactory) args[3] : null;
+
         return new NioEventLoop(this, executor, (SelectorProvider) args[0],
             ((SelectStrategyFactory) args[1]).newSelectStrategy(), (RejectedExecutionHandler) args[2], queueFactory);
     }

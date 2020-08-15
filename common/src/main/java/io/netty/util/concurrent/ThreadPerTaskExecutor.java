@@ -20,6 +20,9 @@ import io.netty.util.internal.ObjectUtil;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
+/**
+ * 简单的每一个任务的线程执行器
+ */
 public final class ThreadPerTaskExecutor implements Executor {
     private final ThreadFactory threadFactory;
 
@@ -27,6 +30,10 @@ public final class ThreadPerTaskExecutor implements Executor {
         this.threadFactory = ObjectUtil.checkNotNull(threadFactory, "threadFactory");
     }
 
+    /**
+     * 开始创建一个线程来执行任务，创建完成则马上开始。
+     * @param command
+     */
     @Override
     public void execute(Runnable command) {
         threadFactory.newThread(command).start();

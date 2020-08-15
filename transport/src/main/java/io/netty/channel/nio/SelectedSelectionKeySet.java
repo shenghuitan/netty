@@ -21,6 +21,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Netty自定义的就绪选择Key对象。
+ * 有那么一些块处理的意思了。
+ */
 final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
 
     SelectionKey[] keys;

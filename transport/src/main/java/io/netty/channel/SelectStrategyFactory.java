@@ -17,11 +17,14 @@ package io.netty.channel;
 
 /**
  * Factory that creates a new {@link SelectStrategy} every time.
+ *
+ * 每次创建新的SelectStrategy的工厂类。
  */
 public interface SelectStrategyFactory {
 
     /**
      * Creates a new {@link SelectStrategy}.
+     * 可以是共享一个SelectStrategy。
      */
     SelectStrategy newSelectStrategy();
 }
