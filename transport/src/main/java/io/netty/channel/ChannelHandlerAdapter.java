@@ -23,6 +23,11 @@ import java.util.Map;
 
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
+ *
+ * ChannelHandler的骨架实现。
+ * 可以认为这个实现是什么都不做的意思，避免了接口ChannelHandler的真实实现类编写过多的代码。
+ *
+ * 字面意思：ChannelHandler适配器。
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 

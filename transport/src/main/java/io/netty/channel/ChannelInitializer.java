@@ -29,9 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
  * registered to its {@link EventLoop}.
  *
+ * 一个特殊的ChannelInboundHandler，提供了简单的方式去初始化Channel，当它被注册到EventLoop。
+ *
  * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,
  * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to
  * setup the {@link ChannelPipeline} of a {@link Channel}.
+ *
+ * 此实现大多数用于Bootstrap#handler(ChannelHandler)、ServerBootstrap#handler(ChannelHandler)、
+ * ServerBootstrap#childHandler(ChannelHandler)的context被Channel的ChannelPipeline建立的时候。
  *
  * <pre>
  *
@@ -47,6 +52,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * ...
  * </pre>
  * Be aware that this class is marked as {@link Sharable} and so the implementation must be safe to be re-used.
+ *
+ * 注意这个方法是标记为Sharable的，所以它的实现可以安全地被重用。
+ *
+ * ChannelOutboundHandler更多是与写操作关联，服务的初始化是自身的信息的建立，用ChannelInboundHandler会更合适。
  *
  * @param <C>   A sub-type of {@link Channel}
  */
