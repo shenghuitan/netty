@@ -363,6 +363,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * the {@link ChannelHandler} to use for serving the requests.
+     *
+     * ChannelHandler用来服务请求
+     *
+     * NOTE 这里写上日志，能做到多少事情？
      */
     public B handler(ChannelHandler handler) {
         this.handler = ObjectUtil.checkNotNull(handler, "handler");

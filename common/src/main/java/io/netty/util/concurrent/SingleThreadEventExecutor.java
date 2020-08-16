@@ -617,6 +617,19 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return ran;
     }
 
+    /**
+     * NOTE 事件执行器的重点实现方法，学习用！！
+     *
+     * @param quietPeriod the quiet period as described in the documentation
+     *                    文档中描述的安静周期
+     * @param timeout     the maximum amount of time to wait until the executor is {@linkplain #shutdown()}
+     *                    regardless if a task was submitted during the quiet period
+     *                    最长等待时间，直到执行器executor关闭，不管一个任务是否已经提交了，在安静周期期间
+     * @param unit        the unit of {@code quietPeriod} and {@code timeout}
+     *                    时间单位
+     *
+     * @return
+     */
     @Override
     public Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit) {
         ObjectUtil.checkPositiveOrZero(quietPeriod, "quietPeriod");
@@ -626,6 +639,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
         ObjectUtil.checkNotNull(unit, "unit");
 
+        // 关闭中，则直接返回现有的terminationFuture。
         if (isShuttingDown()) {
             return terminationFuture();
         }

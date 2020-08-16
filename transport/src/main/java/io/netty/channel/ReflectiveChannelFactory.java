@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
  */
 public class ReflectiveChannelFactory<T extends Channel> implements ChannelFactory<T> {
 
+    // 反射拿到的Channel的构造器
     private final Constructor<? extends T> constructor;
 
     public ReflectiveChannelFactory(Class<? extends T> clazz) {
@@ -38,6 +39,7 @@ public class ReflectiveChannelFactory<T extends Channel> implements ChannelFacto
         }
     }
 
+    // 使用Channel的构造器创建一个新的Channel对象
     @Override
     public T newChannel() {
         try {

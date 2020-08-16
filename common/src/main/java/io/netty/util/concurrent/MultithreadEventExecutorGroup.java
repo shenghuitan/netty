@@ -93,6 +93,8 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
+                // TODO 这里重点！！！事件执行器如何初始化？
+                // 以NioEventLoop作为例子，将初始化Selector、头尾队列、selectedKeys暴露、阻塞策略等
                 children[i] = newChild(executor, args);
                 success = true;
             } catch (Exception e) {
@@ -103,6 +105,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 // 一旦出现任意一个EventExecutor初始化失败，则关闭整个数组的所有EventExecutor。
                 if (!success) {
                     for (int j = 0; j < i; j ++) {
+                        // TODO 这里重点！！！shutdown如何执行？
+                        // 可参考以下方法：
+                        // io.netty.util.concurrent.SingleThreadEventExecutor.shutdownGracefully
                         children[j].shutdownGracefully();
                     }
 
@@ -123,7 +128,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
 
-        // 初始化EventExecutor选择器
+        // 初始化EventExecutor选择器，默认简单+1轮询
         chooser = chooserFactory.newChooser(children);
 
         // 初始化EventExecutor全部终止的监听器

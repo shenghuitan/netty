@@ -54,6 +54,11 @@ public interface EventExecutor extends EventExecutorGroup {
      * {@code false} otherwise.
      *
      * 返回true，若是指定的Thread是在此event loop中执行的。否则返回false。
+     *
+     * 此事件上次执行的线程，与方法参数的线程，是否同一个线程。
+     * 若相同则执行，不同则查找上次执行的线程后，再使用上次的线程来执行？
+     *
+     * 也就是事件和线程强绑定？
      */
     boolean inEventLoop(Thread thread);
 

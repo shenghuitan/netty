@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
  *
+ * 引导程序的子类，使得可以允许通过简单的方式来引导启动ServerChannel。
+ *
  */
 public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerChannel> {
 
@@ -48,11 +50,12 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     // The order in which child ChannelOptions are applied is important they may depend on each other for validation
     // purposes.
+    // 总是通过synchronized来同步读写
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<AttributeKey<?>, Object>();
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
-    private volatile EventLoopGroup childGroup;
-    private volatile ChannelHandler childHandler;
+    private volatile EventLoopGroup childGroup;     // Worker线程池，Boss线程池在父对象中定义。
+    private volatile ChannelHandler childHandler;   // Worker的处理器，定义编解码和业务逻辑处理等
 
     public ServerBootstrap() { }
 
@@ -78,6 +81,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      * Set the {@link EventLoopGroup} for the parent (acceptor) and the child (client). These
      * {@link EventLoopGroup}'s are used to handle all the events and IO for {@link ServerChannel} and
      * {@link Channel}'s.
+     *
+     * 为父节点（acceptor）和子节点（client）设置EventLoopGroup。这些EventLoopGroup被用来处理所有的事件，
+     * 以及ServerChannel和Channel的IO操作。
      */
     public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGroup) {
         super.group(parentGroup);
