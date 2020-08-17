@@ -108,6 +108,7 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
      * failed.
      *
      * 等待当前future直到执行完成。若当前future执行失败，则重新抛出失败的原因。
+     * 当返回值为非null，认为执行完成。
      */
     Future<V> sync() throws InterruptedException;
 
