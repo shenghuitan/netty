@@ -31,12 +31,18 @@ import java.util.List;
 
 /**
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on messages.
+ *
+ * AbstractNioChannel的基类，提供给Channel操作一个消息。
  */
 public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
     boolean inputShutdown;
 
     /**
      * @see AbstractNioChannel#AbstractNioChannel(Channel, SelectableChannel, int)
+     *
+     * @param parent            初始化：null
+     * @param ch                初始化：ServerSocketChannel
+     * @param readInterestOp    初始化：SelectionKey.OP_ACCEPT
      */
     protected AbstractNioMessageChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent, ch, readInterestOp);

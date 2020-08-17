@@ -21,10 +21,19 @@ import java.net.SocketAddress;
 
 /**
  * Represents the properties of a {@link Channel} implementation.
+ *
+ * 代表Channel实现的属性
  */
 public final class ChannelMetadata {
 
+    /**
+     * 是否已断开连接
+     */
     private final boolean hasDisconnect;
+
+    /**
+     * 默认单次read loop的最大消息拉取数量
+     */
     private final int defaultMaxMessagesPerRead;
 
     /**
@@ -41,11 +50,20 @@ public final class ChannelMetadata {
     /**
      * Create a new instance
      *
+     * 创建一个新实例
+     *
      * @param hasDisconnect     {@code true} if and only if the channel has the {@code disconnect()} operation
      *                          that allows a user to disconnect and then call {@link Channel#connect(SocketAddress)}
      *                          again, such as UDP/IP.
+     *
+     *                          返回true，当且仅当channel已经调用了断开连接操作，允许用户disconnect，然后再次调用
+     *                          Channel#connect(SocketAddress)，比如UDP/IP。
+     *
      * @param defaultMaxMessagesPerRead If a {@link MaxMessagesRecvByteBufAllocator} is in use, then this value will be
      * set for {@link MaxMessagesRecvByteBufAllocator#maxMessagesPerRead()}. Must be {@code > 0}.
+     *
+     *                                  如果一个MaxMessagesRecvByteBufAllocator被使用，则这个值将被设置为
+     *                                  MaxMessagesRecvByteBufAllocator#maxMessagesPerRead()。必须 > 0。
      */
     public ChannelMetadata(boolean hasDisconnect, int defaultMaxMessagesPerRead) {
         checkPositive(defaultMaxMessagesPerRead, "defaultMaxMessagesPerRead");

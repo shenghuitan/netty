@@ -42,6 +42,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
+ *
+ * 默认的ChannelPipeline实现。通常由Channel的实现创建，当Channel被创建的时候。
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -62,9 +64,13 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     };
 
+    /**
+     * 估算器
+     */
     private static final AtomicReferenceFieldUpdater<DefaultChannelPipeline, MessageSizeEstimator.Handle> ESTIMATOR =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
+
     final AbstractChannelHandlerContext head;
     final AbstractChannelHandlerContext tail;
 
@@ -90,9 +96,17 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     /**
      * Set to {@code true} once the {@link AbstractChannel} is registered.Once set to {@code true} the value will never
      * change.
+     *
+     * 设置成true，一旦AbstractChannel被注册。一旦设置成true，将不再变化。
      */
     private boolean registered;
 
+    /**
+     * ServerSocketChannel
+     * SocketChannel
+     *
+     * @param channel
+     */
     protected DefaultChannelPipeline(Channel channel) {
         this.channel = ObjectUtil.checkNotNull(channel, "channel");
         succeededFuture = new SucceededChannelFuture(channel, null);
@@ -101,7 +115,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         tail = new TailContext(this);
         head = new HeadContext(this);
 
-        head.next = tail;
+        head.next = tail;   // Pipeline的初始化，首位相接
         tail.prev = head;
     }
 

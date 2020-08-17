@@ -18,18 +18,26 @@ package io.netty.channel;
 /**
  * {@link RecvByteBufAllocator} that limits the number of read operations that will be attempted when a read operation
  * is attempted by the event loop.
+ *
+ * RecvByteBufAllocator将被尝试限制读操作的数量，当一个读操作被event loop尝试的时候。
  */
 public interface MaxMessagesRecvByteBufAllocator extends RecvByteBufAllocator {
     /**
      * Returns the maximum number of messages to read per read loop.
      * a {@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object) channelRead()} event.
      * If this value is greater than 1, an event loop might attempt to read multiple times to procure multiple messages.
+     *
+     * 返回每一个read loop的消息的最大值。一个channelRead事件。
+     * 如果这个值大于1，一个事件循环可能尝试读取多次拉取多个消息。
      */
     int maxMessagesPerRead();
 
     /**
      * Sets the maximum number of messages to read per read loop.
      * If this value is greater than 1, an event loop might attempt to read multiple times to procure multiple messages.
+     *
+     * 设置单个读循环的消息的最大数量。
+     * 如果这个值大于1，event loop可能尝试多次读取，去拉取多个消息。
      */
     MaxMessagesRecvByteBufAllocator maxMessagesPerRead(int maxMessagesPerRead);
 }

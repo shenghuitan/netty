@@ -34,11 +34,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ConnectionPendingException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
+import java.nio.channels.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -72,15 +68,58 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     /**
      * Create a new instance
      *
+     * 创建一个NioChannel实例
+     *
      * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
+     *                          已被创建的新实例的父Channel。可能为null
+     *
      * @param ch                the underlying {@link SelectableChannel} on which it operates
+     *                          提供的底层SelectableChannel，可能是一个ServerSocketChannel。
+     *
      * @param readInterestOp    the ops to set to receive data from the {@link SelectableChannel}
+     *                          被设置的操作去接收SelectableChannel的数据
+     *
      */
     protected AbstractNioChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent);
         this.ch = ch;
         this.readInterestOp = readInterestOp;
         try {
+            /**
+             * Adjusts this channel's blocking mode.
+             *
+             * 调整channel的阻塞模式。
+             *
+             * <p> If this channel is registered with one or more selectors then an
+             * attempt to place it into blocking mode will cause an {@link
+             * IllegalBlockingModeException} to be thrown.
+             *
+             * <p> This method may be invoked at any time.  The new blocking mode will
+             * only affect I/O operations that are initiated after this method returns.
+             * For some implementations this may require blocking until all pending I/O
+             * operations are complete.
+             *
+             * <p> If this method is invoked while another invocation of this method or
+             * of the {@link #register(Selector, int) register} method is in progress
+             * then it will first block until the other operation is complete. </p>
+             *
+             * @param  block  If <tt>true</tt> then this channel will be placed in
+             *                blocking mode; if <tt>false</tt> then it will be placed
+             *                non-blocking mode
+             *
+             * @return  This selectable channel
+             *
+             * @throws  ClosedChannelException
+             *          If this channel is closed
+             *
+             * @throws  IllegalBlockingModeException
+             *          If <tt>block</tt> is <tt>true</tt> and this channel is
+             *          registered with one or more selectors
+             *
+             * @throws IOException
+             *         If an I/O error occurs
+             */
+            // public static native void configureBlocking(FileDescriptor var0, boolean var1) throws IOException;
             ch.configureBlocking(false);
         } catch (IOException e) {
             try {

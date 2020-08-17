@@ -39,12 +39,14 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A skeletal {@link Channel} implementation.
+ *
+ * Channel的骨架实现。
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannel.class);
 
-    private final Channel parent;
+    private final Channel parent;   // Channel的父亲
     private final ChannelId id;
     private final Unsafe unsafe;
     private final DefaultChannelPipeline pipeline;
@@ -64,6 +66,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Creates a new instance.
+     *
+     * Channel创建时，创建并初始化pipeline。
      *
      * @param parent
      *        the parent of this channel. {@code null} if there's no parent.
@@ -331,6 +335,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Create a new {@link AbstractUnsafe} instance which will be used for the life-time of the {@link Channel}
+     *
+     * 创建一个AbstractUnsafe对象，在Channel的声明周期中使用。
+     *
+     * new NioMessageUnsafe()
      */
     protected abstract AbstractUnsafe newUnsafe();
 

@@ -42,11 +42,71 @@ import java.util.Map;
 /**
  * A {@link io.netty.channel.socket.ServerSocketChannel} implementation which uses
  * NIO selector based implementation to accept new connections.
+ *
+ * ServerSocketChannel实现了NIO Selector的基础实现，接收新连接。
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
                              implements io.netty.channel.socket.ServerSocketChannel {
 
+    /**
+     * Channel元数据：
+     * 未断开连接、单次read loop最多可以拉取16个消息
+     */
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
+
+    /**
+     * Returns the system-wide default selector provider for this invocation of
+     * the Java virtual machine.
+     *
+     * 返回全系统默认selector provider，为JVM的这次调用。
+     *
+     * <p> The first invocation of this method locates the default provider
+     * object as follows: </p>
+     *
+     * 首次调用此方法将按以下方法定位默认的provider对象：
+     *
+     * <ol>
+     *
+     *   <li><p> If the system property
+     *   <tt>java.nio.channels.spi.SelectorProvider</tt> is defined then it is
+     *   taken to be the fully-qualified name of a concrete provider class.
+     *   The class is loaded and instantiated; if this process fails then an
+     *   unspecified error is thrown.  </p></li>
+     *
+     *   若系统属性java.nio.channels.spi.SelectorProvider是已定义的，则代入到一个具体的类的
+     *   全限定名称。此类被加载和初始化。如果处理失败，则会抛出一个未指定错误。
+     *
+     *   <li><p> If a provider class has been installed in a jar file that is
+     *   visible to the system class loader, and that jar file contains a
+     *   provider-configuration file named
+     *   <tt>java.nio.channels.spi.SelectorProvider</tt> in the resource
+     *   directory <tt>META-INF/services</tt>, then the first class name
+     *   specified in that file is taken.  The class is loaded and
+     *   instantiated; if this process fails then an unspecified error is
+     *   thrown.  </p></li>
+     *
+     *   如果一个provider class已经被安装到一个jar文件，并且系统class loader是可见的，则此jar文件
+     *   包含了一个provider-configuration文件命名为java.nio.channels.spi.SelectorProvider，在
+     *   资源目录META-INF/services中，然后文件中首个类指定的名称被使用。此类被加载和初始化。
+     *   如果处理失败，则抛出一个未指定错误。
+     *
+     *   <li><p> Finally, if no provider has been specified by any of the above
+     *   means then the system-default provider class is instantiated and the
+     *   result is returned.  </p></li>
+     *
+     *   最后，如果没有provider被指定，通过以上的任意一种方式，那意味这系统默认的provider class
+     *   是已经实例化的了，返回结果。
+     *
+     * </ol>
+     *
+     * <p> Subsequent invocations of this method return the provider that was
+     * returned by the first invocation.  </p>
+     *
+     * 此方法后续的调用将返回provider，在首次调用的时候返回。
+     *
+     * @return  The system-wide default selector provider
+     *          返回全系统默认的selector provider
+     */
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioServerSocketChannel.class);
@@ -57,8 +117,12 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
              *  Use the {@link SelectorProvider} to open {@link SocketChannel} and so remove condition in
              *  {@link SelectorProvider#provider()} which is called by each ServerSocketChannel.open() otherwise.
              *
+             *  使用SelectorProvider打开SocketChannel，然后删除SelectorProvider#provider()里的条件，否则它将被
+             *  每一个ServerSocketChannel.open()调用。
+             *
              *  See <a href="https://github.com/netty/netty/issues/2308">#2308</a>.
              */
+            // new ServerSocketChannel()
             return provider.openServerSocketChannel();
         } catch (IOException e) {
             throw new ChannelException(
@@ -86,8 +150,14 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      * Create a new instance using the given {@link ServerSocketChannel}.
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
+        // 创建和初始化pipeline，设置非阻塞，关注accept事件
         super(null, channel, SelectionKey.OP_ACCEPT);
-        config = new NioServerSocketChannelConfig(this, javaChannel().socket());
+
+        // this.socket = ServerSocketAdaptor.create(this);
+        ServerSocket serverSocket = javaChannel().socket();
+
+        // NOTE 这里会配置很多的默认参数
+        config = new NioServerSocketChannelConfig(this, serverSocket);
     }
 
     @Override
