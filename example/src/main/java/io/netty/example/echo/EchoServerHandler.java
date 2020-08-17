@@ -29,10 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Sharable
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
-    Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
+    private Logger logger = LoggerFactory.getLogger(EchoServerHandler.class);
 
     AtomicInteger i = new AtomicInteger(0);
-    int total = 0;
+    int total;
     long time = System.currentTimeMillis();
 
     @Override

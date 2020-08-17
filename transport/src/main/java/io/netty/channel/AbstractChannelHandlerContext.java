@@ -58,6 +58,11 @@ import static io.netty.channel.ChannelHandlerMask.MASK_USER_EVENT_TRIGGERED;
 import static io.netty.channel.ChannelHandlerMask.MASK_WRITE;
 import static io.netty.channel.ChannelHandlerMask.mask;
 
+/**
+ * 持有pipeline
+ * 连接上一个和下一个Context指针
+ * 与ChannelHandler没有直接的关系，对ChannelHandler的调用，操作pipeline的handlers游标即可。
+ */
 abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);

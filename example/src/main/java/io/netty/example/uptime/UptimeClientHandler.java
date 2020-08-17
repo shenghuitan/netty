@@ -98,7 +98,8 @@ public class UptimeClientHandler extends SimpleChannelInboundHandler<Object> {
              */
             @Override
             public void run() {
-                logger.info("channelUnregistered schedule Reconnecting to: " + UptimeClient.HOST + ':' + UptimeClient.PORT);
+                logger.info("channelUnregistered schedule Reconnecting to: "
+                        + UptimeClient.HOST + ':' + UptimeClient.PORT);
                 UptimeClient.connect();
             }
         }, UptimeClient.RECONNECT_DELAY, TimeUnit.SECONDS);

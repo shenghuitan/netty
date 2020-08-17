@@ -133,6 +133,11 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return this;
     }
 
+    /**
+     * 初始化Channel的事件线程池、链路属性等
+     *
+     * @param channel
+     */
     @Override
     void init(Channel channel) {
         setChannelOptions(channel, newOptionsArray(), logger);

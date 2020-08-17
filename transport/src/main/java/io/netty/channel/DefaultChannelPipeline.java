@@ -50,6 +50,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private static final String HEAD_NAME = generateName0(HeadContext.class);
     private static final String TAIL_NAME = generateName0(TailContext.class);
 
+    /**
+     * 名称缓冲池
+     * 比如：所有handlers的名字
+     */
     private static final FastThreadLocal<Map<Class<?>, String>> nameCaches =
             new FastThreadLocal<Map<Class<?>, String>>() {
         @Override
@@ -120,6 +124,14 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return new DefaultChannelHandlerContext(this, childExecutor(group), name, handler);
     }
 
+    /**
+     * 从EventExecutorGroup中选择一个EventExecutor。
+     * 如果一个group对应一个Executor，则直接从group中选择下一个。
+     * 如果一个group对应多个Executor，轮询group，选择下一个。
+     *
+     * @param group
+     * @return
+     */
     private EventExecutor childExecutor(EventExecutorGroup group) {
         if (group == null) {
             return null;
@@ -195,6 +207,16 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return addLast(null, name, handler);
     }
 
+    /**
+     * 初始化的参数，仅有一个handler
+     *
+     * @param group    the {@link EventExecutorGroup} which will be used to execute the {@link ChannelHandler}
+     *                 methods
+     * @param name     the name of the handler to append
+     * @param handler  the handler to append
+     *
+     * @return
+     */
     @Override
     public final ChannelPipeline addLast(EventExecutorGroup group, String name, ChannelHandler handler) {
         final AbstractChannelHandlerContext newCtx;
@@ -384,6 +406,13 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return this;
     }
 
+    /**
+     * 默认生成handler名称
+     * 在添加handler到pipeline的时候，是一定要带上名称的，所以这个方法和调用方，是内部方法。
+     *
+     * @param handler
+     * @return
+     */
     private String generateName(ChannelHandler handler) {
         Map<Class<?>, String> cache = nameCaches.get();
         Class<?> handlerType = handler.getClass();

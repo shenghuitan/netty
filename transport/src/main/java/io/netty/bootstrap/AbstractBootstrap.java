@@ -85,6 +85,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * The {@link EventLoopGroup} which is used to handle all the events for the to-be-created
      * {@link Channel}
+     *
+     * EventLoopGroup用来处理所有被Channel创建的所有事件。
      */
     public B group(EventLoopGroup group) {
         ObjectUtil.checkNotNull(group, "group");
@@ -104,6 +106,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * The {@link Class} which is used to create {@link Channel} instances from.
      * You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
      * {@link Channel} implementation has no no-args constructor.
+     *
+     * 这个Class是用来创建实例的。
+     * 也可以使用#channelFactory(io.netty.channel.ChannelFactory)方法，如果Channel的实现类没有无参构造器。
      */
     public B channel(Class<? extends C> channelClass) {
         return channelFactory(new ReflectiveChannelFactory<C>(
@@ -241,6 +246,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * Create a new {@link Channel} and bind it.
+     *
+     * 创建一个新的Channel来绑定。
      */
     public ChannelFuture bind(int inetPort) {
         return bind(new InetSocketAddress(inetPort));
@@ -268,6 +275,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(ObjectUtil.checkNotNull(localAddress, "localAddress"));
     }
 
+    /**
+     * 网络协议初始化
+     *
+     * @param localAddress
+     * @return
+     */
     private ChannelFuture doBind(final SocketAddress localAddress) {
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
@@ -304,10 +317,15 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    /**
+     * Channel初始化
+     *
+     * @return
+     */
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            channel = channelFactory.newChannel();
+            channel = channelFactory.newChannel();  // new NioServerSocketChannel()
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
