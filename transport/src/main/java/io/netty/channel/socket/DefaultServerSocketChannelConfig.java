@@ -36,6 +36,8 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * The default {@link ServerSocketChannelConfig} implementation.
+ *
+ * 默认的ServerSocketChannelConfig实现。
  */
 public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
                                               implements ServerSocketChannelConfig {
@@ -45,6 +47,8 @@ public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
 
     /**
      * Creates a new instance.
+     *
+     * ServerSocketChannel初始化，从适配器创建或选择ServerSocket后，开始初始化连接的参数配置。
      */
     public DefaultServerSocketChannelConfig(ServerSocketChannel channel, ServerSocket javaSocket) {
         super(channel);

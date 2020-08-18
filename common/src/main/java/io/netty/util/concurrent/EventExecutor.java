@@ -46,6 +46,8 @@ public interface EventExecutor extends EventExecutorGroup {
      * Calls {@link #inEventLoop(Thread)} with {@link Thread#currentThread()} as argument
      *
      * 调用inEventLoop(Thread)方法来查看当前线程是否在此EventExecutor中管理。
+     *
+     * NOTE 对这个方法一直有疑问！！！
      */
     boolean inEventLoop();
 
@@ -59,6 +61,9 @@ public interface EventExecutor extends EventExecutorGroup {
      * 若相同则执行，不同则查找上次执行的线程后，再使用上次的线程来执行？
      *
      * 也就是事件和线程强绑定？
+     *
+     * io.netty.util.concurrent.SingleThreadEventExecutor#inEventLoop(java.lang.Thread)
+     * 只有SingleThreadEventExecutor判断了执行绑定线程是否当前线程。
      */
     boolean inEventLoop(Thread thread);
 

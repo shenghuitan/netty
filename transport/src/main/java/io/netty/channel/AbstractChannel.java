@@ -421,6 +421,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * {@link Unsafe} implementation which sub-classes must extend and use.
+     *
+     * Unsafe实现，子类必须继承使用。
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
@@ -457,6 +459,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             return remoteAddress0();
         }
 
+        /**
+         * NOTE 这里是具体的register逻辑。
+         *
+         * @param eventLoop 当前执行的EventLoop
+         * @param promise   返回的结果
+         */
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
             ObjectUtil.checkNotNull(eventLoop, "eventLoop");
@@ -464,6 +472,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
+            // EventLoop与当前Channel实例不兼容
             if (!isCompatible(eventLoop)) {
                 promise.setFailure(
                         new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
@@ -471,6 +480,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             AbstractChannel.this.eventLoop = eventLoop;
+
+            // 这里保证了每一个task，都会被其对应的线程来执行，当前线程非对应的线程，则把task放入到对应的线程绑定的taskQueue
+            // 中，再由当前线程wakeup，使task开始被执行。
 
             if (eventLoop.inEventLoop()) {
                 register0(promise);
@@ -1059,6 +1071,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * Return {@code true} if the given {@link EventLoop} is compatible with this instance.
+     *
+     * 返回true，若给定的EventLoop与当前实例兼容。
+     *
+     * 对于io.netty.channel.nio.AbstractNioChannel#isCompatible(io.netty.channel.EventLoop)：
+     * return loop instanceof NioEventLoop;
+     *
+     * 即判断使用的EventLoop与Channel本身是否配套的，如NIO、OIO、KQueue等。
      */
     protected abstract boolean isCompatible(EventLoop loop);
 

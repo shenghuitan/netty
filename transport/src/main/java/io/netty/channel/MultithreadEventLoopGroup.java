@@ -81,6 +81,12 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     @Override
     protected abstract EventLoop newChild(Executor executor, Object... args) throws Exception;
 
+    /**
+     * 选择next event loop，执行register。
+     *
+     * @param channel   ServerBootstrap -> ServerSocketChannel
+     * @return
+     */
     @Override
     public ChannelFuture register(Channel channel) {
         return next().register(channel);

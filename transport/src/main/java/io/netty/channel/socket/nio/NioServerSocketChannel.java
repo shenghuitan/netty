@@ -157,6 +157,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         ServerSocket serverSocket = javaChannel().socket();
 
         // NOTE 这里会配置很多的默认参数
+        // 初始化阶段，配置的参数不多，一般为连接时间，和默认读写缓冲区大小
         config = new NioServerSocketChannelConfig(this, serverSocket);
     }
 

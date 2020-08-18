@@ -19,21 +19,29 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * WriteBufferWaterMark is used to set low water mark and high water mark for the write buffer.
+ *
+ * WriteBufferWaterMark是用来给写缓冲区设置低水位线和高水位线的。
+ *
  * <p>
  * If the number of bytes queued in the write buffer exceeds the
  * {@linkplain #high high water mark}, {@link Channel#isWritable()}
  * will start to return {@code false}.
+ *
+ * 如果字节队列数量在写缓冲区超过了高水位线，Channel#isWritable()方法将开始返回false。
+ *
  * <p>
  * If the number of bytes queued in the write buffer exceeds the
  * {@linkplain #high high water mark} and then
  * dropped down below the {@linkplain #low low water mark},
  * {@link Channel#isWritable()} will start to return
  * {@code true} again.
+ *
+ * 如果字节队列数量在写缓冲区超过了高水位线，则掉下来在低水位线之下，Channel#isWritable()将再次返回true。
  */
 public final class WriteBufferWaterMark {
 
-    private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
-    private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;
+    private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;    // 默认低水位线，32KB
+    private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;   // 默认高水位线，64KB
 
     public static final WriteBufferWaterMark DEFAULT =
             new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK, DEFAULT_HIGH_WATER_MARK, false);
@@ -53,6 +61,8 @@ public final class WriteBufferWaterMark {
 
     /**
      * This constructor is needed to keep backward-compatibility.
+     *
+     * 这是向后兼容构造方法。
      */
     WriteBufferWaterMark(int low, int high, boolean validate) {
         if (validate) {

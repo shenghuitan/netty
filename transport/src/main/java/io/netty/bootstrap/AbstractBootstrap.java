@@ -330,6 +330,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         } catch (Throwable t) {
             if (channel != null) {
                 // channel can be null if newChannel crashed (eg SocketException("too many open files"))
+                // 连接过多时，会导致channel创建失败，需要文件描述符等信息
                 channel.unsafe().closeForcibly();
                 // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
                 return new DefaultChannelPromise(channel, GlobalEventExecutor.INSTANCE).setFailure(t);
@@ -338,7 +339,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
-        ChannelFuture regFuture = config().group().register(channel);
+        ChannelFuture regFuture = config().group().register(channel);   // bossGroup
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {
                 channel.close();
@@ -355,6 +356,16 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         //    i.e. It's safe to attempt bind() or connect() now:
         //         because bind() or connect() will be executed *after* the scheduled registration task is executed
         //         because register(), bind(), and connect() are all bound to the same thread.
+
+        /*
+        如果我们执行到了这里，promise没有failed，会是一下情况中的一种：
+        1、如果我们尝试从event loop注册，注册在这个点已经完成了。
+            例如，现在尝试bing()或者connect()是安全的，因为channel已经注册了。
+        2、如果我们尝试从其它线程注册，注册请求已经成功添加到了event loop的task queue，后续执行。
+            例如，现在尝试bind()或connect()是安全的：
+                因为bind()或connect()将被执行，在注册任务调度执行之后，因为register()，bing()，和connect()，都是绑定到
+                同一个线程执行的。
+         */
 
         return regFuture;
     }
@@ -404,6 +415,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Returns the {@link AbstractBootstrapConfig} object that can be used to obtain the current config
      * of the bootstrap.
+     *
+     * 返回AbstractBootstrapConfig对象，用来获取当前bootstrap的配置。
      */
     public abstract AbstractBootstrapConfig<B, C> config();
 

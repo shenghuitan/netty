@@ -70,13 +70,22 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     /**
      * Creates a new instance.
      *
+     * 创建一个新实例。
+     *
      * It is preferable to use {@link EventExecutor#newPromise()} to create a new promise
+     *
+     * 更可取的方式是使用EventExecutor#newPromise()去创建一个新的promise。
      *
      * @param executor
      *        the {@link EventExecutor} which is used to notify the promise once it is complete.
      *        It is assumed this executor will protect against {@link StackOverflowError} exceptions.
      *        The executor may be used to avoid {@link StackOverflowError} by executing a {@link Runnable} if the stack
      *        depth exceeds a threshold.
+     *
+     *        EventExecutor用来通知promise，当它完成的时候。
+     *        这假设当前的executor将防范StackOverflowError异常。
+     *        executor可用来避免执行Runnable的StackOverflowError，如果堆栈深度超过了一个阈值。
+     *
      *
      */
     public DefaultPromise(EventExecutor executor) {

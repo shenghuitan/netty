@@ -352,6 +352,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         if (isShutdown()) {
             reject();
         }
+        // 添加task到taskQueue
         return taskQueue.offer(task);
     }
 
@@ -556,6 +557,21 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
     }
 
+    /**
+     * 单线程EventExecutor仅需要判断传入的线程，是否是EventExecutor绑定的线程。
+     *
+     * 当前EventExecutor绑定了线程A：
+     * SingleThreadEventExecutor.thread = A;
+     *
+     * 当非A线程调用此方法：
+     * inEventLoop(Thread B) -> false;
+     *
+     * 当A线程调用此方法：
+     * inEventLoop(Thread A) -> true。
+     *
+     * @param thread
+     * @return
+     */
     @Override
     public boolean inEventLoop(Thread thread) {
         return thread == this.thread;
@@ -826,6 +842,15 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return isTerminated();
     }
 
+    /**
+     * NOTE 注意这里的执行任务，并非直接调起线程池执行。
+     *
+     * 而是把task放入到当前的EventExecutor中，由EventExecutor绑定的线程池来处理。
+     * 放入队列之后，判断是否绑定线程匹配，若匹配，自动执行完成，不匹配，则触发wakeup，使
+     * EventExecutor执行方offer到taskQueue中的task。
+     *
+     * @param task
+     */
     @Override
     public void execute(Runnable task) {
         ObjectUtil.checkNotNull(task, "task");

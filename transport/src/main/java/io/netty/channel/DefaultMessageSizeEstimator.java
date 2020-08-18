@@ -50,6 +50,8 @@ public final class DefaultMessageSizeEstimator implements MessageSizeEstimator {
 
     /**
      * Return the default implementation which returns {@code 8} for unknown messages.
+     *
+     * 对未知的消息，返回8，作为默认的实现。
      */
     public static final MessageSizeEstimator DEFAULT = new DefaultMessageSizeEstimator(8);
 

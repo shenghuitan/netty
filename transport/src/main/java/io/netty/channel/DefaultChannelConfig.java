@@ -42,30 +42,36 @@ import static io.netty.util.internal.ObjectUtil.checkPositiveOrZero;
 
 /**
  * The default {@link ChannelConfig} implementation.
+ *
+ * 默认ChannelConfig的实现
  */
 public class DefaultChannelConfig implements ChannelConfig {
     private static final MessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.DEFAULT;
 
+    /**
+     * 默认连接超时时间为30秒
+     */
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
 
     private static final AtomicIntegerFieldUpdater<DefaultChannelConfig> AUTOREAD_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(DefaultChannelConfig.class, "autoRead");
+
     private static final AtomicReferenceFieldUpdater<DefaultChannelConfig, WriteBufferWaterMark> WATERMARK_UPDATER =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelConfig.class, WriteBufferWaterMark.class, "writeBufferWaterMark");
 
     protected final Channel channel;
 
-    private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private volatile RecvByteBufAllocator rcvBufAllocator;
-    private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
+    private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT; // 默认缓冲区分配器
+    private volatile RecvByteBufAllocator rcvBufAllocator;  // 消息接收缓冲区分配器，跟进读缓冲区动态调整
+    private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;    // 默认为8
 
-    private volatile int connectTimeoutMillis = DEFAULT_CONNECT_TIMEOUT;
+    private volatile int connectTimeoutMillis = DEFAULT_CONNECT_TIMEOUT;    // 默认30秒
     private volatile int writeSpinCount = 16;
     @SuppressWarnings("FieldMayBeFinal")
     private volatile int autoRead = 1;
     private volatile boolean autoClose = true;
-    private volatile WriteBufferWaterMark writeBufferWaterMark = WriteBufferWaterMark.DEFAULT;
+    private volatile WriteBufferWaterMark writeBufferWaterMark = WriteBufferWaterMark.DEFAULT;  // 默认写缓冲区高低水位线
     private volatile boolean pinEventExecutor = true;
 
     public DefaultChannelConfig(Channel channel) {
@@ -312,9 +318,12 @@ public class DefaultChannelConfig implements ChannelConfig {
     @Override
     public ChannelConfig setAutoRead(boolean autoRead) {
         boolean oldAutoRead = AUTOREAD_UPDATER.getAndSet(this, autoRead ? 1 : 0) == 1;
+        // 状态切换，设置autoRead，并开始从pipeline的下一个handler read
         if (autoRead && !oldAutoRead) {
             channel.read();
-        } else if (!autoRead && oldAutoRead) {
+        }
+        // 状态切换，取消autoRead
+        else if (!autoRead && oldAutoRead) {
             autoReadCleared();
         }
         return this;
@@ -323,6 +332,8 @@ public class DefaultChannelConfig implements ChannelConfig {
     /**
      * Is called once {@link #setAutoRead(boolean)} is called with {@code false} and {@link #isAutoRead()} was
      * {@code true} before.
+     *
+     * 当#setAutoRead(boolean)的参数为false，即取消autoRead，且原autoRead味true的时候，此方法被调用。
      */
     protected void autoReadCleared() { }
 
