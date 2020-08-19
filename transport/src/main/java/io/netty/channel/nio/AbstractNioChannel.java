@@ -46,9 +46,147 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     private static final InternalLogger logger =
             InternalLoggerFactory.getInstance(AbstractNioChannel.class);
 
+    /**
+     * A channel that can be multiplexed via a {@link Selector}.
+     *
+     * <p> In order to be used with a selector, an instance of this class must
+     * first be <i>registered</i> via the {@link #register(Selector,int,Object)
+     * register} method.  This method returns a new {@link SelectionKey} object
+     * that represents the channel's registration with the selector.
+     *
+     * <p> Once registered with a selector, a channel remains registered until it
+     * is <i>deregistered</i>.  This involves deallocating whatever resources were
+     * allocated to the channel by the selector.
+     *
+     * <p> A channel cannot be deregistered directly; instead, the key representing
+     * its registration must be <i>cancelled</i>.  Cancelling a key requests that
+     * the channel be deregistered during the selector's next selection operation.
+     * A key may be cancelled explicitly by invoking its {@link
+     * SelectionKey#cancel() cancel} method.  All of a channel's keys are cancelled
+     * implicitly when the channel is closed, whether by invoking its {@link
+     * java.nio.channels.Channel#close close} method or by interrupting a thread blocked in an I/O
+     * operation upon the channel.
+     *
+     * <p> If the selector itself is closed then the channel will be deregistered,
+     * and the key representing its registration will be invalidated, without
+     * further delay.
+     *
+     * <p> A channel may be registered at most once with any particular selector.
+     *
+     * <p> Whether or not a channel is registered with one or more selectors may be
+     * determined by invoking the {@link #isRegistered isRegistered} method.
+     *
+     * <p> Selectable channels are safe for use by multiple concurrent
+     * threads. </p>
+     *
+     *
+     * <a name="bm"></a>
+     * <h2>Blocking mode</h2>
+     *
+     * A selectable channel is either in <i>blocking</i> mode or in
+     * <i>non-blocking</i> mode.  In blocking mode, every I/O operation invoked
+     * upon the channel will block until it completes.  In non-blocking mode an I/O
+     * operation will never block and may transfer fewer bytes than were requested
+     * or possibly no bytes at all.  The blocking mode of a selectable channel may
+     * be determined by invoking its {@link #isBlocking isBlocking} method.
+     *
+     * <p> Newly-created selectable channels are always in blocking mode.
+     * Non-blocking mode is most useful in conjunction with selector-based
+     * multiplexing.  A channel must be placed into non-blocking mode before being
+     * registered with a selector, and may not be returned to blocking mode until
+     * it has been deregistered.
+     *
+     *
+     * @author Mark Reinhold
+     * @author JSR-51 Expert Group
+     * @since 1.4
+     *
+     * @see SelectionKey
+     * @see Selector
+     */
     private final SelectableChannel ch;
+
     protected final int readInterestOp;
+
+    /**
+     * A token representing the registration of a {@link SelectableChannel} with a
+     * {@link Selector}.
+     *
+     * <p> A selection key is created each time a channel is registered with a
+     * selector.  A key remains valid until it is <i>cancelled</i> by invoking its
+     * {@link #cancel cancel} method, by closing its channel, or by closing its
+     * selector.  Cancelling a key does not immediately remove it from its
+     * selector; it is instead added to the selector's <a
+     * href="Selector.html#ks"><i>cancelled-key set</i></a> for removal during the
+     * next selection operation.  The validity of a key may be tested by invoking
+     * its {@link #isValid isValid} method.
+     *
+     * <a name="opsets"></a>
+     *
+     * <p> A selection key contains two <i>operation sets</i> represented as
+     * integer values.  Each bit of an operation set denotes a category of
+     * selectable operations that are supported by the key's channel.
+     *
+     * <ul>
+     *
+     *   <li><p> The <i>interest set</i> determines which operation categories will
+     *   be tested for readiness the next time one of the selector's selection
+     *   methods is invoked.  The interest set is initialized with the value given
+     *   when the key is created; it may later be changed via the {@link
+     *   #interestOps(int)} method. </p></li>
+     *
+     *   <li><p> The <i>ready set</i> identifies the operation categories for which
+     *   the key's channel has been detected to be ready by the key's selector.
+     *   The ready set is initialized to zero when the key is created; it may later
+     *   be updated by the selector during a selection operation, but it cannot be
+     *   updated directly. </p></li>
+     *
+     * </ul>
+     *
+     * <p> That a selection key's ready set indicates that its channel is ready for
+     * some operation category is a hint, but not a guarantee, that an operation in
+     * such a category may be performed by a thread without causing the thread to
+     * block.  A ready set is most likely to be accurate immediately after the
+     * completion of a selection operation.  It is likely to be made inaccurate by
+     * external events and by I/O operations that are invoked upon the
+     * corresponding channel.
+     *
+     * <p> This class defines all known operation-set bits, but precisely which
+     * bits are supported by a given channel depends upon the type of the channel.
+     * Each subclass of {@link SelectableChannel} defines an {@link
+     * SelectableChannel#validOps() validOps()} method which returns a set
+     * identifying just those operations that are supported by the channel.  An
+     * attempt to set or test an operation-set bit that is not supported by a key's
+     * channel will result in an appropriate run-time exception.
+     *
+     * <p> It is often necessary to associate some application-specific data with a
+     * selection key, for example an object that represents the state of a
+     * higher-level protocol and handles readiness notifications in order to
+     * implement that protocol.  Selection keys therefore support the
+     * <i>attachment</i> of a single arbitrary object to a key.  An object can be
+     * attached via the {@link #attach attach} method and then later retrieved via
+     * the {@link #attachment() attachment} method.
+     *
+     * <p> Selection keys are safe for use by multiple concurrent threads.  The
+     * operations of reading and writing the interest set will, in general, be
+     * synchronized with certain operations of the selector.  Exactly how this
+     * synchronization is performed is implementation-dependent: In a naive
+     * implementation, reading or writing the interest set may block indefinitely
+     * if a selection operation is already in progress; in a high-performance
+     * implementation, reading or writing the interest set may block briefly, if at
+     * all.  In any case, a selection operation will always use the interest-set
+     * value that was current at the moment that the operation began.  </p>
+     *
+     *
+     * @author Mark Reinhold
+     * @author JSR-51 Expert Group
+     * @since 1.4
+     *
+     * @see SelectableChannel
+     * @see Selector
+     */
     volatile SelectionKey selectionKey;
+
     boolean readPending;
     private final Runnable clearReadPendingRunnable = new Runnable() {
         @Override
@@ -411,17 +549,112 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         return loop instanceof NioEventLoop;
     }
 
+    /**
+     * 把Selector注册到SelectableChannel
+     *
+     * @throws Exception
+     */
     @Override
     protected void doRegister() throws Exception {
         boolean selected = false;
         for (;;) {
             try {
+
+                /**
+                 * Registers this channel with the given selector, returning a selection
+                 * key.
+                 *
+                 * 注册当前channel，使用给定的selector，返回一个selection key。
+                 *
+                 * <p> If this channel is currently registered with the given selector then
+                 * the selection key representing that registration is returned.  The key's
+                 * interest set will have been changed to <tt>ops</tt>, as if by invoking
+                 * the {@link SelectionKey#interestOps(int) interestOps(int)} method.  If
+                 * the <tt>att</tt> argument is not <tt>null</tt> then the key's attachment
+                 * will have been set to that value.  A {@link CancelledKeyException} will
+                 * be thrown if the key has already been cancelled.
+                 *
+                 * 若channel目前注册，用给定的selector，然后selection key表示注册的返回。selection key
+                 * 的interest set将转变成ops，如果通过调用SelectionKey#interestOps(int)方法。
+                 * 如果att参数非null，key的attachment将已经设置为这个值。CancelledKeyException
+                 * 将被抛出，若key已经被取消。
+                 *
+                 * <p> Otherwise this channel has not yet been registered with the given
+                 * selector, so it is registered and the resulting new key is returned.
+                 * The key's initial interest set will be <tt>ops</tt> and its attachment
+                 * will be <tt>att</tt>.
+                 *
+                 * 除非channel没有被使用给定的selector注册，它将被注册，返回新的结果key。key的初始化
+                 * interest set将是ops，且它的attachment将是att。
+                 *
+                 * <p> This method may be invoked at any time.  If this method is invoked
+                 * while another invocation of this method or of the {@link
+                 * #configureBlocking(boolean) configureBlocking} method is in progress
+                 * then it will first block until the other operation is complete.  This
+                 * method will then synchronize on the selector's key set and therefore may
+                 * block if invoked concurrently with another registration or selection
+                 * operation involving the same selector. </p>
+                 *
+                 * 这个方法可以在任何时候被调用。如果此方法被调用，当另一个此方法或#configureBlocking(boolean)
+                 * 方法的进行中的调用，它将首先阻塞，直到其它操作结束。此方法将根据selector的key set同步，因此
+                 * 可能阻塞，如果同时使用另一个注册或selection操作调用相同的selector。
+                 *
+                 * <p> If this channel is closed while this operation is in progress then
+                 * the key returned by this method will have been cancelled and will
+                 * therefore be invalid. </p>
+                 *
+                 * 如果此channel已关闭，当此操作进行中，key将通过此方法返回，将被取消而成为无效。
+                 *
+                 * @param  sel
+                 *         The selector with which this channel is to be registered
+                 *         selector，将被注册到channel
+                 *
+                 * @param  ops
+                 *         The interest set for the resulting key
+                 *         结果key的interest set
+                 *
+                 * @param  att
+                 *         The attachment for the resulting key; may be <tt>null</tt>
+                 *         结果key的attachment；可能为null
+                 *
+                 * @throws  ClosedChannelException
+                 *          If this channel is closed
+                 *
+                 * @throws  ClosedSelectorException
+                 *          If the selector is closed
+                 *
+                 * @throws  IllegalBlockingModeException
+                 *          If this channel is in blocking mode
+                 *
+                 * @throws  IllegalSelectorException
+                 *          If this channel was not created by the same provider
+                 *          as the given selector
+                 *
+                 * @throws  CancelledKeyException
+                 *          If this channel is currently registered with the given selector
+                 *          but the corresponding key has already been cancelled
+                 *
+                 * @throws  IllegalArgumentException
+                 *          If a bit in the <tt>ops</tt> set does not correspond to an
+                 *          operation that is supported by this channel, that is, if
+                 *          {@code set & ~validOps() != 0}
+                 *
+                 * @return  A key representing the registration of this channel with
+                 *          the given selector
+                 *
+                 *          返回一个key，表示使用给定的channel的selector的注册结果
+                 */
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {
                 if (!selected) {
                     // Force the Selector to select now as the "canceled" SelectionKey may still be
                     // cached and not removed because no Select.select(..) operation was called yet.
+
+                    // 强制Selector selectNow，因为canceled SelectionKey可能被缓存，并且没有被删除，因为
+                    // 没有Select.select()操作会再被调用。
+
+                    // 意在清空可能的Selector取消事件
                     eventLoop().selectNow();
                     selected = true;
                 } else {
