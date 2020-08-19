@@ -74,19 +74,33 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
 
     /**
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} is about to be called.
+     *
+     * handlerAdded方法即将被调用。
+     *
+     * NOTE 这些方法的调用起了什么作用？
+     *
+     * 作用：channel还没有注册到eventLoop的时候，context不能绑定到pipeline。
+     * 所以暂时设置成ADD_PENDING，把绑定作为task添加到回调处理器。
+     * 即当channel注册完成后，会重新打开任务，把context绑定到pipeline。
      */
     private static final int ADD_PENDING = 1;
     /**
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} was called.
+     *
+     * handlerAdded方法已调用。
      */
     private static final int ADD_COMPLETE = 2;
     /**
      * {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
+     *
+     * handlerRemoved方法已调用。
      */
     private static final int REMOVE_COMPLETE = 3;
     /**
      * Neither {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}
      * nor {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
+     *
+     * 要么是handlerAdded方法，要么是handlerRemoved方法被调用。
      */
     private static final int INIT = 0;
 
@@ -936,10 +950,19 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         assert updated; // This should always be true as it MUST be called before setAddComplete() or setRemoved().
     }
 
+    /**
+     * 调用添加Handler
+     *
+     * @throws Exception
+     */
     final void callHandlerAdded() throws Exception {
         // We must call setAddComplete before calling handlerAdded. Otherwise if the handlerAdded method generates
         // any pipeline events ctx.handler() will miss them because the state will not allow it.
-        if (setAddComplete()) {
+        // 我们必须调用setAddComplete，在调用handlerAdded之前。否则如果handlerAdded方法生成任何pipeline事件
+        // ctx.handler()将丢失它们，因为state不允许。
+
+        // 先标记为handlerAdded方法已调用，获得这个锁之后，才开始真正调用handlerAdded方法。
+        if (setAddComplete()) { // 原子变更状态，乐观锁之后在执行操作
             handler().handlerAdded(this);
         }
     }

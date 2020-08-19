@@ -56,7 +56,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     private volatile SocketAddress localAddress;
     private volatile SocketAddress remoteAddress;
     private volatile EventLoop eventLoop;
-    private volatile boolean registered;
+    private volatile boolean registered;    // 是否已注册
     private boolean closeInitiated;
     private Throwable initialCloseCause;
 
@@ -430,6 +430,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         private RecvByteBufAllocator.Handle recvHandle;
         private boolean inFlush0;
         /** true if the channel has never been registered, false otherwise */
+        // true 若channel从未被注册过，否则false。
         private boolean neverRegistered = true;
 
         private void assertEventLoop() {
@@ -505,10 +506,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+         *
+         * @param promise
+         */
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
                 // call was outside of the eventLoop
+                // 检查channel是否仍打开，因为它同时可能被关闭，当注册被外部的event loop调用。
                 if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
@@ -519,6 +525,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                // 保证我们调用handlerAdded(...)，在我们实际通知promise之前。这是必须的，因为用户可能已经在
+                // ChannelFutureListener通过pipeline发起事件。
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);

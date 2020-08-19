@@ -67,6 +67,76 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     /**
      * 估算器
      */
+    /**
+     * A reflection-based utility that enables atomic updates to
+     * designated {@code volatile} reference fields of designated
+     * classes.  This class is designed for use in atomic data structures
+     * in which several reference fields of the same node are
+     * independently subject to atomic updates. For example, a tree node
+     * might be declared as
+     *
+     * 一个基于反射的工具类，允许原子更新指定class的指定的volatile类型的fields。
+     * 此类设计用来在原子数据结构在多个相同节点被独立主体原子更新的引用fields。
+     *
+     * <pre> {@code
+     * class Node {
+     *   private volatile Node left, right;
+     *
+     *   private static final AtomicReferenceFieldUpdater<Node, Node> leftUpdater =
+     *     AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "left");
+     *   private static AtomicReferenceFieldUpdater<Node, Node> rightUpdater =
+     *     AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "right");
+     *
+     *   Node getLeft() { return left; }
+     *   boolean compareAndSetLeft(Node expect, Node update) {
+     *     return leftUpdater.compareAndSet(this, expect, update);
+     *   }
+     *   // ... and so on
+     * }}</pre>
+     *
+     * <p>Note that the guarantees of the {@code compareAndSet}
+     * method in this class are weaker than in other atomic classes.
+     * Because this class cannot ensure that all uses of the field
+     * are appropriate for purposes of atomic access, it can
+     * guarantee atomicity only with respect to other invocations of
+     * {@code compareAndSet} and {@code set} on the same updater.
+     *
+     * 注意compareAndSet方法在此class的保证是若于在其它的原子classes的。因为此class不能保证
+     * 此field的所有使用是适用于原子访问的目的，它可以保证原子性，仅在相同的updater的关于
+     * compareAndSet和set的其它调用。
+     *
+     * @since 1.5
+     * @author Doug Lea
+     * @param <T> The type of the object holding the updatable field
+     * @param <V> The type of the field
+     */
+    /**
+     * Creates and returns an updater for objects with the given field.
+     * The Class arguments are needed to check that reflective types and
+     * generic types match.
+     *
+     * 创建和返回一个对象的updater，使用给定的field。
+     * 此Class参数需要检查反射的类型和普通类型是否匹配。
+     *
+     * @param tclass the class of the objects holding the field
+     *               持有此field的class
+     *
+     * @param vclass the class of the field
+     *               field的类型
+     *
+     * @param fieldName the name of the field to be updated
+     *                  被updated的field的名字
+     *
+     * @param <U> the type of instances of tclass
+     * @param <W> the type of instances of vclass
+     * @return the updater
+     * @throws ClassCastException if the field is of the wrong type
+     * @throws IllegalArgumentException if the field is not volatile
+     * @throws RuntimeException with a nested reflection-based
+     * exception if the class does not hold field or is the wrong type,
+     * or the field is inaccessible to the caller according to Java language
+     * access control
+     */
     private static final AtomicReferenceFieldUpdater<DefaultChannelPipeline, MessageSizeEstimator.Handle> ESTIMATOR =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
@@ -87,9 +157,15 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      * This is the head of a linked list that is processed by {@link #callHandlerAddedForAllHandlers()} and so process
      * all the pending {@link #callHandlerAdded0(AbstractChannelHandlerContext)}.
      *
+     * 这是linked list的head，通过#callHandlerAddedForAllHandlers()方法处理，然后处理所有待定的
+     * #callHandlerAdded0(AbstractChannelHandlerContext)。
+     *
      * We only keep the head because it is expected that the list is used infrequently and its size is small.
      * Thus full iterations to do insertions is assumed to be a good compromised to saving memory and tail management
      * complexity.
+     *
+     * 我们进保持head，因为它被期望，此list是很少使用的，它的size很小。
+     * 因此全量迭代，插入是假设为一种好的妥协方式去节省内存和减少跟踪管理的复杂度。
      */
     private PendingHandlerCallback pendingHandlerCallbackHead;
 
@@ -237,13 +313,21 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         synchronized (this) {
             checkMultiplicity(handler);
 
+            // 没有名字，则默认生成一个名字，保证不冲突
+            // 这里把handler绑定到了group的某个线程，即Channel绑定了执行线程。
             newCtx = newContext(group, filterName(name, handler), handler);
 
+            // 链表添加
             addLast0(newCtx);
 
             // If the registered is false it means that the channel was not registered on an eventLoop yet.
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
+            /*
+            如果registered为false，这代表channel还没有注册到一个eventLoop。
+            在这种情况下，我们添加此context到pipeline，添加一个task将调用ChannelHandler.handlerAdded(...)，
+            一旦channel注册完成。
+             */
             if (!registered) {
                 newCtx.setAddPending();
                 callHandlerCallbackLater(newCtx, true);
@@ -635,6 +719,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         oldCtx.next = newCtx;
     }
 
+    /**
+     * 非@Sharable handler，不能多次添加或删除。
+     *
+     * @param handler
+     */
     private static void checkMultiplicity(ChannelHandler handler) {
         if (handler instanceof ChannelHandlerAdapter) {
             ChannelHandlerAdapter h = (ChannelHandlerAdapter) handler;
@@ -647,6 +736,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 调用添加Handler
+     *
+     * @param ctx
+     */
     private void callHandlerAdded0(final AbstractChannelHandlerContext ctx) {
         try {
             ctx.callHandlerAdded();
@@ -690,6 +784,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             firstRegistration = false;
             // We are now registered to the EventLoop. It's time to call the callbacks for the ChannelHandlers,
             // that were added before the registration was done.
+            // 现在注册到EventLoop。是时候调用ChannelHandlers的回调，它已被添加，在注册完成之前。
             callHandlerAddedForAllHandlers();
         }
     }
@@ -1154,6 +1249,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         // holding the lock and so produce a deadlock if handlerAdded(...) will try to add another handler from outside
         // the EventLoop.
         PendingHandlerCallback task = pendingHandlerCallbackHead;
+
+        // 循环添加所有Handlers
         while (task != null) {
             task.execute();
             task = task.next;

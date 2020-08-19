@@ -128,10 +128,12 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     @Override
     public boolean setUncancellable() {
+        // this.result初始值为null
         if (RESULT_UPDATER.compareAndSet(this, null, UNCANCELLABLE)) {
             return true;
         }
         Object result = this.result;
+        // 值为UNCANCELLABLE 或 promise.cause == null
         return !isDone0(result) || !isCancelled0(result);
     }
 

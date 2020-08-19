@@ -702,8 +702,13 @@ public interface ChannelPipeline
      * Returns the context object of the specified {@link ChannelHandler} in
      * this pipeline.
      *
+     * 返回 在当前pipeline 指定的ChannelHandler 的 context对象。
+     *
      * @return the context object of the specified handler.
      *         {@code null} if there's no such handler in this pipeline.
+     *
+     *         指定的handler 的 context对象。
+     *         null，如果在pipeline中没有这样的handler。
      */
     ChannelHandlerContext context(ChannelHandler handler);
 
