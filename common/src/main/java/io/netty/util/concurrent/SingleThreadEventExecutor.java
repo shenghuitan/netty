@@ -553,6 +553,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         if (!inEventLoop) {
             // Use offer as we actually only need this to unblock the thread and if offer fails we do not care as there
             // is already something in the queue.
+
+            // 使用offer，当我们实际仅需要这个去unblock这个线程，若offer fails，我们不在意，因为已经有些东西在队列里了。
             taskQueue.offer(WAKEUP_TASK);
         }
     }
@@ -635,6 +637,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     /**
      * NOTE 事件执行器的重点实现方法，学习用！！
+     *
+     * 变更必要的各个EventExecutor的状态，设置wakeup任务到队列，等待线程处理完成退出。
      *
      * @param quietPeriod the quiet period as described in the documentation
      *                    文档中描述的安静周期
