@@ -862,10 +862,19 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         execute(ObjectUtil.checkNotNull(task, "task"), false);
     }
 
+    /**
+     *
+     * @param task  待添加到this.taskQueue的任务
+     * @param immediate 是否即时
+     */
     private void execute(Runnable task, boolean immediate) {
+        // this.thread == 当前线程
         boolean inEventLoop = inEventLoop();
+        // 添加task到this.taskQueue
         addTask(task);
         if (!inEventLoop) {
+            // 若this.thread == null，把当前线程绑定到this.thread，开始执行任务
+            // 若this.thread != null，taskQueue有已分配的固定Worker来执行
             startThread();
             if (isShutdown()) {
                 boolean reject = false;
@@ -1014,6 +1023,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private void doStartThread() {
         assert thread == null;
+
+        // this.thread == null，绑定this.thread = Thread.currentThread();
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -1025,6 +1036,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                 boolean success = false;
                 updateLastExecutionTime();
                 try {
+                    // 初始化分配的线程后，开始执行消费taskQueue
                     SingleThreadEventExecutor.this.run();
                     success = true;
                 } catch (Throwable t) {

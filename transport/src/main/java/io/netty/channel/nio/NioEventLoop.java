@@ -474,6 +474,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * NOTE 简而言之，固定EventLoop线程循环执行taskQueue的所有task。
+     *
+     * 若EventLoop不匹配，则忽略执行。
+     */
     @Override
     protected void run() {
         int selectCnt = 0;
