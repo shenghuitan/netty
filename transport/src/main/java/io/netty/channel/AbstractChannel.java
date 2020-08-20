@@ -100,6 +100,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     /**
      * Returns a new {@link DefaultChannelId} instance. Subclasses may override this method to assign custom
      * {@link ChannelId}s to {@link Channel}s that use the {@link AbstractChannel#AbstractChannel(Channel)} constructor.
+     *
+     * 返回一个新的DefaultChannelId实例。子类应改写这个方法，已分配自定义的ChannelId是给Channels，使用
+     * AbstractChannel#AbstractChannel(Channel)构造器。
      */
     protected ChannelId newId() {
         return DefaultChannelId.newInstance();

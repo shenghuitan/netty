@@ -29,6 +29,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The internal data structure that stores the thread-local variables for Netty and all {@link FastThreadLocal}s.
  * Note that this class is for internal use only and is subject to change at any time.  Use {@link FastThreadLocal}
  * unless you know what you are doing.
+ *
+ * 内部数据结构，存储thread-local变量，给Netty和所有FastThreadLocals使用。
+ * 注意此类为仅内部使用，且受制于在任何时间改变。使用FastThreadLocal，除非你知道你正在做什么。
+ *
+ * 未填充的内部本地线程Map
  */
 class UnpaddedInternalThreadLocalMap {
 

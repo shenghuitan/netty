@@ -33,14 +33,20 @@ import static io.netty.util.internal.MacAddressUtil.parseMAC;
 
 /**
  * The default {@link ChannelId} implementation.
+ *
+ * ChannelId的默认实现。
  */
 public final class DefaultChannelId implements ChannelId {
 
     private static final long serialVersionUID = 3884076183504074063L;
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultChannelId.class);
+
+    // MAC地址，若最终拿不到，随机生成。
     private static final byte[] MACHINE_ID;
     private static final int PROCESS_ID_LEN = 4;
+
+    // 进程ID，若最终拿不到，使用随机数。
     private static final int PROCESS_ID;
     private static final int SEQUENCE_LEN = 4;
     private static final int TIMESTAMP_LEN = 8;

@@ -136,6 +136,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * is not working for you because of some more complex needs. If your {@link Channel} implementation
      * has a no-args constructor, its highly recommend to just use {@link #channel(Class)} to
      * simplify your code.
+     *
+     * ChannelFactory是用来创建Channel实例的，当调用#bind()方法的时候。这个方法通常仅用于若#channel(Class)
+     * 不起作用，因为需要一些更复杂的因素。如果你的Channel实现有一个无参构造器，它非常推荐去使用#channel(Class)
+     * 来简化你的代码。
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     public B channelFactory(io.netty.channel.ChannelFactory<? extends C> channelFactory) {

@@ -53,6 +53,13 @@ public class DefaultProgressivePromise<V> extends DefaultPromise<V> implements P
         return this;
     }
 
+    /**
+     *
+     * @param progress  < 0，返回false
+     * @param total     < progress，返回false
+     * @return  已完成，返回false
+     *
+     */
     @Override
     public boolean tryProgress(long progress, long total) {
         if (total < 0) {

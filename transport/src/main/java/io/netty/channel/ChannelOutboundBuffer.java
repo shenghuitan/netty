@@ -42,8 +42,14 @@ import static java.lang.Math.min;
 /**
  * (Transport implementors only) an internal data structure used by {@link AbstractChannel} to store its pending
  * outbound write requests.
+ *
+ * （仅传输实现者）一个内部数据结构，被用于AbstractChannel来存储它的待定的outbound写请求。
+ *
  * <p>
  * All methods must be called by a transport implementation from an I/O thread, except the following ones:
+ *
+ * 所有方法必须被通过一个从IO线程的transport实现调用，除了以下几个：
+ *
  * <ul>
  * <li>{@link #size()} and {@link #isEmpty()}</li>
  * <li>{@link #isWritable()}</li>
@@ -76,32 +82,36 @@ public final class ChannelOutboundBuffer {
     // Entry(flushedEntry) --> ... Entry(unflushedEntry) --> ... Entry(tailEntry)
     //
     // The Entry that is the first in the linked-list structure that was flushed
+    // 链表中首个已被刷新的元素
     private Entry flushedEntry;
     // The Entry which is the first unflushed in the linked-list structure
+    // 链表中首个未刷新的元素
     private Entry unflushedEntry;
     // The Entry which represents the tail of the buffer
+    // buffer的尾部元素
     private Entry tailEntry;
     // The number of flushed entries that are not written yet
+    // 已刷新，未写入的元素的数量
     private int flushed;
 
-    private int nioBufferCount;
-    private long nioBufferSize;
+    private int nioBufferCount; // nio缓冲区个数
+    private long nioBufferSize; // nio缓冲区大小
 
-    private boolean inFail;
+    private boolean inFail;     // 是否失败中
 
     private static final AtomicLongFieldUpdater<ChannelOutboundBuffer> TOTAL_PENDING_SIZE_UPDATER =
             AtomicLongFieldUpdater.newUpdater(ChannelOutboundBuffer.class, "totalPendingSize");
 
     @SuppressWarnings("UnusedDeclaration")
-    private volatile long totalPendingSize;
+    private volatile long totalPendingSize; // 总待定大小
 
     private static final AtomicIntegerFieldUpdater<ChannelOutboundBuffer> UNWRITABLE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(ChannelOutboundBuffer.class, "unwritable");
 
     @SuppressWarnings("UnusedDeclaration")
-    private volatile int unwritable;
+    private volatile int unwritable;    // 不可写？
 
-    private volatile Runnable fireChannelWritabilityChangedTask;
+    private volatile Runnable fireChannelWritabilityChangedTask;    // 发起Channel可写性已变更的任务
 
     ChannelOutboundBuffer(AbstractChannel channel) {
         this.channel = channel;
@@ -236,6 +246,9 @@ public final class ChannelOutboundBuffer {
 
     /**
      * Notify the {@link ChannelPromise} of the current message about writing progress.
+     *
+     * 通知当前消息的ChannelPromise关于正在写的进展。
+     * 通过tryProgress方法。
      */
     public void progress(long amount) {
         Entry e = flushedEntry;

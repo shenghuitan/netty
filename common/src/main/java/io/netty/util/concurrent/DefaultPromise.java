@@ -32,6 +32,11 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+/**
+ * DefaultPromise，在执行完成后，即this.future非空时，调用所有的listeners的operationComplete方法。
+ *
+ * @param <V>
+ */
 public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultPromise.class);
     private static final InternalLogger rejectedExecutionLogger =
@@ -53,17 +58,28 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * One or more listeners. Can be a {@link GenericFutureListener} or a {@link DefaultFutureListeners}.
      * If {@code null}, it means either 1) no listeners were added yet or 2) all listeners were notified.
      *
+     * 一个或多个监听器。可以是一个GenericFutureListener，或者一个DefaultFutureListeners。
+     * 如果null，表示没有监听器被添加，或者所有的监听器已被通知。
+     *
      * Threading - synchronized(this). We must support adding listeners when there is no EventExecutor.
+     *
+     * 穿线 —— synchronized(this)。
+     * 我们必须支持添加监听者，当没有EventExecutor的时候。
      */
     private Object listeners;
+
     /**
      * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().
+     *
+     * 穿线 —— synchronized(this)。我们需要保持监控，来使用Java的底层的wait()/notifyAll()方法。
      */
     private short waiters;
 
     /**
      * Threading - synchronized(this). We must prevent concurrent notification and FIFO listener notification if the
      * executor changes.
+     *
+     * Threading - synchronized(this)。我们必须防止同时通知和FIFO监听通知，如果executor改变。
      */
     private boolean notifyingListeners;
 
@@ -85,8 +101,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      *        EventExecutor用来通知promise，当它完成的时候。
      *        这假设当前的executor将防范StackOverflowError异常。
      *        executor可用来避免执行Runnable的StackOverflowError，如果堆栈深度超过了一个阈值。
-     *
-     *
      */
     public DefaultPromise(EventExecutor executor) {
         this.executor = checkNotNull(executor, "executor");
@@ -94,6 +108,8 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     /**
      * See {@link #executor()} for expectations of the executor.
+     *
+     * 查看#executor()，给executor的期望。
      */
     protected DefaultPromise() {
         // only for subclasses
@@ -506,23 +522,16 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     private void notifyListeners() {
         EventExecutor executor = executor();
-        // 当前线程，只能被指定的EventExecutor调用
-        // 因为线程和Future绑定了一起？或者说，每一个线程绑定了一个Future，要正确调用返回，必须召回线程和Future的绑定关系？
-        // 线程在一开始的时候，和EventLoop是绑定了在一起的。
-        // 一般情况下，当前线程的执行，是在EventLoop中执行。
-        // 但意外？的情况下，可以脱离了EventLoop，这时候，就。。。
 
-        // 不对，EventLoop的判断，只是为了能在EventLoop中设置更多的规则和参数。
-        // 若当前线程非绑定的EventLoop，则做与EventLoop无关的线程调度执行，即直接放入到executor执行即可。
         if (executor.inEventLoop()) {
             final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
             final int stackDepth = threadLocals.futureListenerStackDepth();
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                threadLocals.setFutureListenerStackDepth(stackDepth + 1);   // 设置EventLoop关联的参数，可以是Future等
+                threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                 try {
-                    notifyListenersNow();   // 实际执行
+                    notifyListenersNow();
                 } finally {
-                    threadLocals.setFutureListenerStackDepth(stackDepth);   // 设置EventLoop关联的参数，可以是Future等
+                    threadLocals.setFutureListenerStackDepth(stackDepth);
                 }
                 return;
             }
@@ -566,23 +575,31 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         });
     }
 
+    /**
+     * 马上通知监听器 -- 同步操作
+     */
     private void notifyListenersNow() {
         Object listeners;
+
+        // 对象的全局锁
         synchronized (this) {
             // Only proceed if there are listeners to notify and we are not already notifying listeners.
+            // 只有有监听者可被通知，且没有正在被通知的时候，才往下执行。
             if (notifyingListeners || this.listeners == null) {
                 return;
             }
             notifyingListeners = true;
-            listeners = this.listeners;
-            this.listeners = null;
+            listeners = this.listeners;     // 拿出待通知的监听者
+            this.listeners = null;          // 拿出后，清空
         }
         for (;;) {
+            // 通知所有的监听者
             if (listeners instanceof DefaultFutureListeners) {
                 notifyListeners0((DefaultFutureListeners) listeners);
             } else {
                 notifyListener0(this, (GenericFutureListener<?>) listeners);
             }
+            // 若通知期间，有新的监听进来了，继续执行通知
             synchronized (this) {
                 if (this.listeners == null) {
                     // Nothing can throw from within this method, so setting notifyingListeners back to false does not
@@ -604,6 +621,13 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         }
     }
 
+    /**
+     * 通知监听者，即调用监听器的，或者Handler的operationComplete方法。
+     * 此时this.future的值为非空？
+     *
+     * @param future
+     * @param l
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void notifyListener0(Future future, GenericFutureListener l) {
         try {
@@ -738,13 +762,25 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     /**
      * Notify all progressive listeners.
+     *
+     * 通知所有progressive监听者
+     *
      * <p>
      * No attempt is made to ensure notification order if multiple calls are made to this method before
      * the original invocation completes.
+     *
+     * 没有尝试去保证通知顺序，如果多个调用到这个方法，在原始调用完成之前。
+     *
      * <p>
      * This will do an iteration over all listeners to get all of type {@link GenericProgressiveFutureListener}s.
+     *
+     * 这将使一个全面迭代所有监听去获得所有GenericProgressiveFutureListener的类型。
+     *
      * @param progress the new progress.
+     *                 新progress
+     *
      * @param total the total progress.
+     *              总progress
      */
     @SuppressWarnings("unchecked")
     void notifyProgressiveListeners(final long progress, final long total) {
@@ -790,6 +826,8 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     /**
      * Returns a {@link GenericProgressiveFutureListener}, an array of {@link GenericProgressiveFutureListener}, or
      * {@code null}.
+     *
+     * 返回一个GenericProgressiveFutureListener，一个GenericProgressiveFutureListener数组，或null。
      */
     private synchronized Object progressiveListeners() {
         Object listeners = this.listeners;
@@ -858,6 +896,12 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         return result instanceof CauseHolder && ((CauseHolder) result).cause instanceof CancellationException;
     }
 
+    /**
+     * result非空，且没有被取消
+     *
+     * @param result
+     * @return
+     */
     private static boolean isDone0(Object result) {
         return result != null && result != UNCANCELLABLE;
     }

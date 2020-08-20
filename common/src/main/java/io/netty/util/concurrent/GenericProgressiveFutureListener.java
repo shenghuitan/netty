@@ -16,13 +16,22 @@
 
 package io.netty.util.concurrent;
 
+/**
+ * 更多为文件传输，断点续传等使用。
+ *
+ * @param <F>
+ */
 public interface GenericProgressiveFutureListener<F extends ProgressiveFuture<?>> extends GenericFutureListener<F> {
     /**
      * Invoked when the operation has progressed.
      *
      * @param progress the progress of the operation so far (cumulative)
+     *                 目前操作的progress（累积）
+     *
      * @param total the number that signifies the end of the operation when {@code progress} reaches at it.
      *              {@code -1} if the end of operation is unknown.
+     *              表示操作的终点的数字，当progress到达的时候。
+     *              -1代表操作的终点是未知的。
      */
     void operationProgressed(F future, long progress, long total) throws Exception;
 }

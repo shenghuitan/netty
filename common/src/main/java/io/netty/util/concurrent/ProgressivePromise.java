@@ -30,6 +30,9 @@ public interface ProgressivePromise<V> extends Promise<V>, ProgressiveFuture<V> 
      * Tries to set the current progress of the operation and notifies the listeners that implement
      * {@link GenericProgressiveFutureListener}.  If the operation is already complete or the progress is out of range,
      * this method does nothing but returning {@code false}.
+     *
+     * 尝试设置当前操作的进展，和通知实现了GenericProgressiveFutureListener的监听。如果操作已经准备完成，
+     * 或者进展已经超出边界，此方法将不会做任何事情，除了返回false。
      */
     boolean tryProgress(long progress, long total);
 
