@@ -28,6 +28,8 @@ import java.util.Map;
 
 /**
  * Exposes the configuration of an {@link AbstractBootstrap}.
+ *
+ * 暴露AbstractBootstrap的配置。
  */
 public abstract class AbstractBootstrapConfig<B extends AbstractBootstrap<B, C>, C extends Channel> {
 
@@ -39,6 +41,8 @@ public abstract class AbstractBootstrapConfig<B extends AbstractBootstrap<B, C>,
 
     /**
      * Returns the configured local address or {@code null} if non is configured yet.
+     *
+     * 返回配置的本地地址，null如果还没有配置。
      */
     public final SocketAddress localAddress() {
         return bootstrap.localAddress();
@@ -46,6 +50,8 @@ public abstract class AbstractBootstrapConfig<B extends AbstractBootstrap<B, C>,
 
     /**
      * Returns the configured {@link ChannelFactory} or {@code null} if non is configured yet.
+     *
+     * 返回配置的ChannelFactory，或者null，如果还没有配置。
      */
     @SuppressWarnings("deprecation")
     public final ChannelFactory<? extends C> channelFactory() {
@@ -54,6 +60,8 @@ public abstract class AbstractBootstrapConfig<B extends AbstractBootstrap<B, C>,
 
     /**
      * Returns the configured {@link ChannelHandler} or {@code null} if non is configured yet.
+     *
+     * 返回配置的ChannelHandler，或者null还没有配置。
      */
     public final ChannelHandler handler() {
         return bootstrap.handler();

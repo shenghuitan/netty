@@ -40,13 +40,20 @@ import java.net.SocketAddress;
  * A {@link Bootstrap} that makes it easy to bootstrap a {@link Channel} to use
  * for clients.
  *
+ * Bootstrap 使得容易去给客户端启动一个Channel。
+ *
  * <p>The {@link #bind()} methods are useful in combination with connectionless transports such as datagram (UDP).
  * For regular TCP connections, please use the provided {@link #connect()} methods.</p>
+ *
+ * #bind()方法很有用在组合无连接传输比如UDP数据报。对于常规的TCP连接，请使用提供的#connect()方法。
  */
 public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(Bootstrap.class);
 
+    /**
+     * 默认的解析器，Netty自定义的实现，可能使用JDK内置的域名解析器。
+     */
     private static final AddressResolverGroup<?> DEFAULT_RESOLVER = DefaultAddressResolverGroup.INSTANCE;
 
     private final BootstrapConfig config = new BootstrapConfig(this);

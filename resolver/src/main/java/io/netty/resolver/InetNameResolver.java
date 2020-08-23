@@ -23,6 +23,8 @@ import java.net.InetSocketAddress;
 
 /**
  * A skeletal {@link NameResolver} implementation that resolves {@link InetAddress}.
+ *
+ * 一个NameResolver的框架实现，解析InetAddress。
  */
 public abstract class InetNameResolver extends SimpleNameResolver<InetAddress> {
     private volatile AddressResolver<InetSocketAddress> addressResolver;
@@ -30,6 +32,7 @@ public abstract class InetNameResolver extends SimpleNameResolver<InetAddress> {
     /**
      * @param executor the {@link EventExecutor} which is used to notify the listeners of the {@link Future} returned
      *                 by {@link #resolve(String)}
+     *                 EventExecutor用于通知监听者，由#resolve(String)方法返回的Future。
      */
     protected InetNameResolver(EventExecutor executor) {
         super(executor);

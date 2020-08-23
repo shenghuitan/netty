@@ -24,15 +24,21 @@ import java.util.List;
 
 /**
  * Resolves an arbitrary string that represents the name of an endpoint into an address.
+ *
+ * 解析一个任意string，代表终端到一个地址的名字。
  */
 public interface NameResolver<T> extends Closeable {
 
     /**
      * Resolves the specified name into an address.
      *
+     * 解析指定的名字到地址。
+     *
      * @param inetHost the name to resolve
+     *                 解析的名字
      *
      * @return the address as the result of the resolution
+     *         地址解析的结果
      */
     Future<T> resolve(String inetHost);
 
@@ -49,9 +55,13 @@ public interface NameResolver<T> extends Closeable {
     /**
      * Resolves the specified host name and port into a list of address.
      *
+     * 解析指定的host名称，装入到一个地址集合中。
+     *
      * @param inetHost the name to resolve
+     *                 解析的名字
      *
      * @return the list of the address as the result of the resolution
+     *         地址集合，解析的结果集。
      */
     Future<List<T>> resolveAll(String inetHost);
 
@@ -67,6 +77,8 @@ public interface NameResolver<T> extends Closeable {
 
     /**
      * Closes all the resources allocated and used by this resolver.
+     *
+     * 关闭所有资源，分配和使用到的，给这个解析器。
      */
     @Override
     void close();

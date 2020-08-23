@@ -26,6 +26,8 @@ import static io.netty.util.internal.ObjectUtil.*;
 
 /**
  * A skeletal {@link NameResolver} implementation.
+ *
+ * 一个NameResolver的实现框架。
  */
 public abstract class SimpleNameResolver<T> implements NameResolver<T> {
 
@@ -34,6 +36,8 @@ public abstract class SimpleNameResolver<T> implements NameResolver<T> {
     /**
      * @param executor the {@link EventExecutor} which is used to notify the listeners of the {@link Future} returned
      *                 by {@link #resolve(String)}
+     *
+     *                 Executor用于通知监听者，返回的Future，通过#resolve(String)方法。
      */
     protected SimpleNameResolver(EventExecutor executor) {
         this.executor = checkNotNull(executor, "executor");
@@ -42,6 +46,8 @@ public abstract class SimpleNameResolver<T> implements NameResolver<T> {
     /**
      * Returns the {@link EventExecutor} which is used to notify the listeners of the {@link Future} returned
      * by {@link #resolve(String)}.
+     *
+     * 返回EventExecutor用户通知监听者，由#resolve(String)方法返回的Future。
      */
     protected EventExecutor executor() {
         return executor;

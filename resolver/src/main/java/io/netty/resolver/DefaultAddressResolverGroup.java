@@ -22,6 +22,8 @@ import java.net.InetSocketAddress;
 
 /**
  * A {@link AddressResolverGroup} of {@link DefaultNameResolver}s.
+ *
+ * 一个DefaultNameResolvers的AddressResolverGroup。
  */
 public final class DefaultAddressResolverGroup extends AddressResolverGroup<InetSocketAddress> {
 

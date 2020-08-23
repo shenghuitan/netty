@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Creates and manages {@link NameResolver}s so that each {@link EventExecutor} has its own resolver instance.
+ *
+ * 创建和管理NameResolvers，因此每一个EventExecutor拥有它自己的解析实例。
  */
 public abstract class AddressResolverGroup<T extends SocketAddress> implements Closeable {
 
@@ -39,6 +41,8 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
 
     /**
      * Note that we do not use a {@link ConcurrentMap} here because it is usually expensive to instantiate a resolver.
+     *
+     * 注意我们不使用一个ConcurrentMap，因为它通常是昂贵的，实例化一个解析器。
      */
     private final Map<EventExecutor, AddressResolver<T>> resolvers =
             new IdentityHashMap<EventExecutor, AddressResolver<T>>();

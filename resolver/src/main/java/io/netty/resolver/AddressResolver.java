@@ -25,11 +25,15 @@ import java.util.List;
 
 /**
  * Resolves a possibility unresolved {@link SocketAddress}.
+ *
+ * 解析一个可能未解析的SocketAddress。
  */
 public interface AddressResolver<T extends SocketAddress> extends Closeable {
 
   /**
    * Returns {@code true} if and only if the specified address is supported by this resolved.
+   *
+   * 返回true，当且仅当指定的address被当前解析器支持。
    */
   boolean isSupported(SocketAddress address);
 
