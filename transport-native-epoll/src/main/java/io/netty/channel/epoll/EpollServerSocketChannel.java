@@ -33,6 +33,8 @@ import static io.netty.channel.unix.NativeInetAddress.address;
 /**
  * {@link ServerSocketChannel} implementation that uses linux EPOLL Edge-Triggered Mode for
  * maximal performance.
+ *
+ * ServerSocketChannel的实现，使用Linux Epoll边缘触发模式，用于最大化性能。
  */
 public final class EpollServerSocketChannel extends AbstractEpollServerChannel implements ServerSocketChannel {
 
