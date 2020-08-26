@@ -27,6 +27,9 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
+/**
+ * 静态文件的HTTP服务
+ */
 public final class HttpStaticFileServer {
 
     static final boolean SSL = System.getProperty("ssl") != null;

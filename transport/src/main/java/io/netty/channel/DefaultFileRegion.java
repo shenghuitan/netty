@@ -47,9 +47,16 @@ public class DefaultFileRegion extends AbstractReferenceCounted implements FileR
     /**
      * Create a new instance
      *
+     * 创建一个默认文件区域的实例。
+     *
      * @param file      the {@link FileChannel} which should be transferred
+     *                  被传递的FileChannel
+     *
      * @param position  the position from which the transfer should start
+     *                  传递的起始坐标
+     *
      * @param count     the number of bytes to transfer
+     *                  传递字节数
      */
     public DefaultFileRegion(FileChannel file, long position, long count) {
         this.file = ObjectUtil.checkNotNull(file, "file");

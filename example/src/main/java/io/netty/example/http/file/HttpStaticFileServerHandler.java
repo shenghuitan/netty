@@ -209,6 +209,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
         }
 
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
+            // 文件传输过程中，打印传输的状态。
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
                 if (total < 0) { // total unknown
@@ -218,6 +219,7 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
                 }
             }
 
+            // 文件经过多次的块发送后，传输完成。
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
                 System.err.println(future.channel() + " Transfer complete.");

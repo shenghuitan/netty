@@ -108,6 +108,9 @@ public class HttpObjectAggregator
 
     /**
      * Creates a new instance.
+     *
+     * 创建一个新的HTTP对象聚合器实例。
+     *
      * @param maxContentLength the maximum length of the aggregated content in bytes.
      * If the length of the aggregated content exceeds this value,
      * {@link #handleOversizedMessage(ChannelHandlerContext, HttpMessage)} will be called.

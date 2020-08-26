@@ -64,6 +64,8 @@ import java.util.Queue;
  * {@link ChunkedInput#readChunk(ChannelHandlerContext)}, resulting in the indefinitely suspended
  * transfer.  To resume the transfer when a new chunk is available, you have to
  * call {@link #resumeTransfer()}.
+ *
+ * 块写处理器。
  */
 public class ChunkedWriteHandler extends ChannelDuplexHandler {
 

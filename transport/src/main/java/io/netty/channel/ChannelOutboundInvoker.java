@@ -301,6 +301,8 @@ public interface ChannelOutboundInvoker {
 
     /**
      * Return an new {@link ChannelProgressivePromise}
+     *
+     * 返回一个ChannelProgressivePromise
      */
     ChannelProgressivePromise newProgressivePromise();
 
