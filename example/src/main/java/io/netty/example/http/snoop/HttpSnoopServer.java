@@ -29,6 +29,8 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 /**
  * An HTTP server that sends back the content of the received HTTP request
  * in a pretty plaintext form.
+ *
+ * HTTP Server，返回接收的HTTP请求的内容，用漂亮的纯文本格式。
  */
 public final class HttpSnoopServer {
 

@@ -58,6 +58,7 @@ public class HttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+        // HttpRequestDecoder 解析出 HttpRequest
         if (msg instanceof HttpRequest) {
             HttpRequest request = this.request = (HttpRequest) msg;
 
@@ -99,6 +100,7 @@ public class HttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> 
             appendDecoderResult(buf, request);
         }
 
+        // HttpObjectAggregator 解析出 LastHttpContent
         if (msg instanceof HttpContent) {
             HttpContent httpContent = (HttpContent) msg;
 
@@ -110,6 +112,7 @@ public class HttpSnoopServerHandler extends SimpleChannelInboundHandler<Object> 
                 appendDecoderResult(buf, request);
             }
 
+            // 最后一块内容
             if (msg instanceof LastHttpContent) {
                 buf.append("END OF CONTENT\r\n");
 

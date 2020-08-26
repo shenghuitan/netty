@@ -28,6 +28,7 @@ public class HttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObje
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
+        // 接收到返回的响应
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
 
@@ -50,6 +51,8 @@ public class HttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObje
                 System.err.println("CONTENT {");
             }
         }
+
+        // 接收到的多个内容块
         if (msg instanceof HttpContent) {
             HttpContent content = (HttpContent) msg;
 
