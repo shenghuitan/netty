@@ -34,11 +34,22 @@ public interface ChannelOutboundHandler extends ChannelHandler {
     /**
      * Called once a connect operation is made.
      *
+     * 进行连接操作后调用。
+     *
      * @param ctx               the {@link ChannelHandlerContext} for which the connect operation is made
+     *                          ChannelHandlerContext，用于进行连接操作。
+     *
      * @param remoteAddress     the {@link SocketAddress} to which it should connect
+     *                          SocketAddress，待连接的对象。
+     *
      * @param localAddress      the {@link SocketAddress} which is used as source on connect
+     *                          SocketAddress，作为源去连接。
+     *
      * @param promise           the {@link ChannelPromise} to notify once the operation completes
+     *                          ChannelPromise，操作完成后通知
+     *
      * @throws Exception        thrown if an error occurs
+     *                          如果错误，抛出Exception。
      */
     void connect(
             ChannelHandlerContext ctx, SocketAddress remoteAddress,

@@ -125,6 +125,8 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     /**
      * Connect a {@link Channel} to the remote peer.
+     *
+     * 连接Channel到远端。
      */
     public ChannelFuture connect(String inetHost, int inetPort) {
         return connect(InetSocketAddress.createUnresolved(inetHost, inetPort));
@@ -249,6 +251,8 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
         // This method is invoked before channelRegistered() is triggered.  Give user handlers a chance to set up
         // the pipeline in its channelRegistered() implementation.
+        // 此方法在channelRegistered()被触发前调用。给予user handlers一个机会去建立pipeline，在它的
+        // channelRegistered()实现中。
         final Channel channel = connectPromise.channel();
         channel.eventLoop().execute(new Runnable() {
             @Override

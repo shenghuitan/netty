@@ -42,11 +42,12 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
     /**
      * Note that we do not use a {@link ConcurrentMap} here because it is usually expensive to instantiate a resolver.
      *
-     * 注意我们不使用一个ConcurrentMap，因为它通常是昂贵的，实例化一个解析器。
+     * 注意这里我们不使用ConcurrentMap，因为通常实例化一个resolver是昂贵的。
      */
     private final Map<EventExecutor, AddressResolver<T>> resolvers =
             new IdentityHashMap<EventExecutor, AddressResolver<T>>();
 
+    // 持有的Executor和Future的引用，Executor结束时释放。
     private final Map<EventExecutor, GenericFutureListener<Future<Object>>> executorTerminationListeners =
             new IdentityHashMap<EventExecutor, GenericFutureListener<Future<Object>>>();
 
@@ -57,6 +58,10 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
      * resolver found, this method creates and returns a new resolver instance created by
      * {@link #newResolver(EventExecutor)} so that the new resolver is reused on another
      * {@code #getResolver(EventExecutor)} call with the same {@link EventExecutor}.
+     *
+     * 返回 AddressResolver 关联到指定的EventExecutor。如果没有关联的resolver，此方法创建并返回一个新的resolver实例，
+     * 通过#newResolver(EventExecutor)方法，因此新的resolver可被重用在另一个#newResolver(EventExecutor)的调用，
+     * 使用相同的EventExecutor。
      */
     public AddressResolver<T> getResolver(final EventExecutor executor) {
         ObjectUtil.checkNotNull(executor, "executor");
@@ -101,6 +106,8 @@ public abstract class AddressResolverGroup<T extends SocketAddress> implements C
 
     /**
      * Invoked by {@link #getResolver(EventExecutor)} to create a new {@link AddressResolver}.
+     *
+     * 通过调用#getResolver(EventExecutor)方法创建一个新的AddressResolver。
      */
     protected abstract AddressResolver<T> newResolver(EventExecutor executor) throws Exception;
 

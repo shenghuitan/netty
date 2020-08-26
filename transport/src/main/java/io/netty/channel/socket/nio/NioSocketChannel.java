@@ -304,6 +304,14 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
+    /**
+     * Socket 层面执行连接操作
+     *
+     * @param remoteAddress
+     * @param localAddress
+     * @return
+     * @throws Exception
+     */
     @Override
     protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
         if (localAddress != null) {
@@ -312,7 +320,10 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
         boolean success = false;
         try {
+            // Java原生Socket执行connect
             boolean connected = SocketUtils.connect(javaChannel(), remoteAddress);
+            // 异步执行，没有马上返回true，监听SelectionKey.OP_CONNECT事件后处理。
+            // 可以认为连接即将成功。
             if (!connected) {
                 selectionKey().interestOps(SelectionKey.OP_CONNECT);
             }

@@ -147,17 +147,27 @@ public interface ChannelOutboundInvoker {
      * Request to connect to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
      *
+     * 请求连接SocketAddress，通知ChannelFuture，一旦操作完成，要么因为成功，要么因为失败。
+     *
      * The given {@link ChannelFuture} will be notified.
+     *
+     * 给定的ChannelFuture将被通知。
      *
      * <p>
      * If the connection fails because of a connection timeout, the {@link ChannelFuture} will get failed with
      * a {@link ConnectTimeoutException}. If it fails because of connection refused a {@link ConnectException}
      * will be used.
+     *
+     * 如果连接失败，因为连接超时，ChannelFuture将得到一个ConnectTimeoutException。如果因连接拒绝失败，ConnectException
+     * 将被使用。
+     *
      * <p>
      * This will result in having the
      * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * 这将导致connect方法被下一个Channel的ChannelPipeline里的ChannelOutboundHandler调用。
      */
     ChannelFuture connect(SocketAddress remoteAddress, ChannelPromise promise);
 
@@ -166,12 +176,21 @@ public interface ChannelOutboundInvoker {
      * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
      *
+     * 请求连接给定的SocketAddress，当绑定localAddress的时候，通知ChannelFuture，当操作完成，要么因为操作成功，要么
+     * 因为失败。
+     *
      * The given {@link ChannelPromise} will be notified and also returned.
+     *
+     * 给定的ChannelPromise将被通知，返回。
+     *
      * <p>
      * This will result in having the
      * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * 这将导致ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)
+     * 方法被调用，被下一个ChannelOutboundHandler，包含在Channel的ChannelPipeline中。
      */
     ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
 

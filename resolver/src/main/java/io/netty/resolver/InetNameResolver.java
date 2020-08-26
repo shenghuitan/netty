@@ -27,6 +27,8 @@ import java.net.InetSocketAddress;
  * 一个NameResolver的框架实现，解析InetAddress。
  */
 public abstract class InetNameResolver extends SimpleNameResolver<InetAddress> {
+
+    // 包装的AddressResolver
     private volatile AddressResolver<InetSocketAddress> addressResolver;
 
     /**
@@ -41,6 +43,9 @@ public abstract class InetNameResolver extends SimpleNameResolver<InetAddress> {
     /**
      * Return a {@link AddressResolver} that will use this name resolver underneath.
      * It's cached internally, so the same instance is always returned.
+     *
+     * 返回一个AddressResolver，将用于这个名字resolver下。
+     * 它被内部缓存，因此总是返回相同的实例。
      */
     public AddressResolver<InetSocketAddress> asAddressResolver() {
         AddressResolver<InetSocketAddress> result = addressResolver;

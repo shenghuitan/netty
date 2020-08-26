@@ -48,10 +48,14 @@ public abstract class AbstractAddressResolver<T extends SocketAddress> implement
     /**
      * @param executor the {@link EventExecutor} which is used to notify the listeners of the {@link Future} returned
      *                 by {@link #resolve(SocketAddress)}
+     *                 EventExecutor，用于通知Future的listeners，通过#resolve(SocketAddress)方法返回。
+     *
      * @param addressType the type of the {@link SocketAddress} supported by this resolver
+     *                    SocketAddress的类型，由此resolver支持。
      */
     protected AbstractAddressResolver(EventExecutor executor, Class<? extends T> addressType) {
         this.executor = checkNotNull(executor, "executor");
+        // addressType为key，优先从内部缓存中获取。
         this.matcher = TypeParameterMatcher.get(addressType);
     }
 
