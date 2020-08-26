@@ -37,6 +37,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 /**
  * Outputs index page content.
+ *
+ * 输出页内容索引
  */
 public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 

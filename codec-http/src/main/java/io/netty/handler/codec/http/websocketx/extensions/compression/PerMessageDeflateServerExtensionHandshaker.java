@@ -32,6 +32,10 @@ import static io.netty.util.internal.ObjectUtil.*;
 /**
  * <a href="http://tools.ietf.org/html/draft-ietf-hybi-permessage-compression-18">permessage-deflate</a>
  * handshake implementation.
+ *
+ * 每一个消息放气服务扩展握手器
+ *
+ * PerMessageDeflate = WebSocket
  */
 public final class PerMessageDeflateServerExtensionHandshaker implements WebSocketServerExtensionHandshaker {
 

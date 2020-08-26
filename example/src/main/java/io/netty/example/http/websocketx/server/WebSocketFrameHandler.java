@@ -24,6 +24,8 @@ import java.util.Locale;
 
 /**
  * Echoes uppercase content of text frames.
+ *
+ * 返回文本帧的大写内容
  */
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
@@ -31,6 +33,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         // ping and pong frames already handled
 
+        // Web Socket 可被解析出独立的格式：TextWebSocketFrame
         if (frame instanceof TextWebSocketFrame) {
             // Send the uppercase string back.
             String request = ((TextWebSocketFrame) frame).text();

@@ -21,6 +21,8 @@ import io.netty.util.CharsetUtil;
 
 /**
  * Web Socket text frame.
+ *
+ * Web Socket 文本帧
  */
 public class TextWebSocketFrame extends WebSocketFrame {
 
