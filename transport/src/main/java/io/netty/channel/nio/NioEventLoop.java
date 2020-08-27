@@ -433,6 +433,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         return selector.keys().size() - cancelledKeys;
     }
 
+    /**
+     * 更换Selector，除了selector本身，其它的所有属性都会被保留下来。
+     */
     private void rebuildSelector0() {
         final Selector oldSelector = selector;
         final SelectorTuple newSelectorTuple;
@@ -667,6 +670,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    // NOTE 替换成Netty包装的selectedKeys，优化的点在哪里呢？
     private void processSelectedKeys() {
         if (selectedKeys != null) {
             processSelectedKeysOptimized();
