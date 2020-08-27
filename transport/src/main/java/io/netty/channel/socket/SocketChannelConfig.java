@@ -145,6 +145,10 @@ public interface SocketChannelConfig extends ChannelConfig {
      * Returns {@code true} if and only if the channel should not close itself when its remote
      * peer shuts down output to make the connection half-closed.  If {@code false}, the connection
      * is closed automatically when the remote peer shuts down output.
+     *
+     * 是否允许半关闭。
+     * 返回true，当且仅当channel没有关闭自己，当它的远端关闭了输出，使得连接处于半关闭状态。
+     * 返回false，连接自动被关闭，当远端关闭输出的时候。
      */
     boolean isAllowHalfClosure();
 

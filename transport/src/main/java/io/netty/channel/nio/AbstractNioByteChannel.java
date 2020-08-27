@@ -73,6 +73,9 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
     /**
      * Shutdown the input side of the channel.
+     *
+     * 关闭channel的输入端。
+     * 原生socket关闭，Netty做了JDK版本的适配。
      */
     protected abstract ChannelFuture shutdownInput();
 
@@ -103,6 +106,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
 
         private void closeOnRead(ChannelPipeline pipeline) {
             if (!isInputShutdown0()) {
+                // 允许半关闭（远端关闭输出），则本端关闭输入。
                 if (isAllowHalfClosure(config())) {
                     shutdownInput();
                     pipeline.fireUserEventTriggered(ChannelInputShutdownEvent.INSTANCE);
@@ -136,6 +140,8 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         @Override
         public final void read() {
             final ChannelConfig config = config();
+            // 是否应该中断已经准备好的读操作
+            // 比如：连接已关闭
             if (shouldBreakReadReady(config)) {
                 clearReadPending();
                 return;

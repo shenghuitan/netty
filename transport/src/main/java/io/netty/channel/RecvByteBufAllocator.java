@@ -41,6 +41,8 @@ public interface RecvByteBufAllocator {
         /**
          * Creates a new receive buffer whose capacity is probably large enough to read all inbound data and small
          * enough not to waste its space.
+         *
+         * 创建一个接收缓冲区，它的容量是尽可能大到读取所有的inbound data，并且足够小以避免空间浪费。
          */
         ByteBuf allocate(ByteBufAllocator alloc);
 
@@ -103,6 +105,8 @@ public interface RecvByteBufAllocator {
 
         /**
          * The read has completed.
+         *
+         * 读操作完成。
          */
         void readComplete();
     }

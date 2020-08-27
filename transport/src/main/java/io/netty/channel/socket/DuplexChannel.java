@@ -29,6 +29,12 @@ public interface DuplexChannel extends Channel {
      * Returns {@code true} if and only if the remote peer shut down its output so that no more
      * data is received from this channel.  Note that the semantic of this method is different from
      * that of {@link Socket#shutdownInput()} and {@link Socket#isInputShutdown()}.
+     *
+     * 返回true，当且仅当远端关闭它的输出，因此没有更多的数据从当前channel被接收。注意此方法的语义是不同于
+     * Socket#shutdownInput()和Socket#isInputShutdown()。
+     *
+     * NOTE 这里指的是双端？
+     * 没有open、没有connect、shutdown，都可以认为返回true。
      */
     boolean isInputShutdown();
 
