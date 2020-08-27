@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Abstract base class for {@link EventExecutor} implementations.
  *
- * EventExecutor的抽象实现
+ * EventExecutor的抽象实现，顶层事件执行器的持有者。
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
@@ -160,6 +160,11 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
 
     /**
      * Try to execute the given {@link Runnable} and just log if it throws a {@link Throwable}.
+     *
+     * 尝试执行给定的Runnable，如果抛出异常，仅记录。
+     *
+     * NOTE 安全执行，即没有开一个新的线程来执行。
+     * 即当前taks被绑定到当前线程来串行执行。
      */
     protected static void safeExecute(Runnable task) {
         try {

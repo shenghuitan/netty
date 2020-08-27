@@ -23,6 +23,8 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Allow to retrieve the {@link EventExecutor} for the calling {@link Thread}.
+ *
+ * 允许找回EventExecutor，给调用的Thread。
  */
 public final class ThreadExecutorMap {
 
@@ -32,6 +34,8 @@ public final class ThreadExecutorMap {
 
     /**
      * Returns the current {@link EventExecutor} that uses the {@link Thread}, or {@code null} if none / unknown.
+     *
+     * 返回当前EventExecutor使用的Thread，或者null，如果不存在，或未知。
      */
     public static EventExecutor currentExecutor() {
         return mappings.get();
@@ -39,6 +43,8 @@ public final class ThreadExecutorMap {
 
     /**
      * Set the current {@link EventExecutor} that is used by the {@link Thread}.
+     *
+     * 设置当前EventExecutor，被Thread使用。
      */
     private static void setCurrentEventExecutor(EventExecutor executor) {
         mappings.set(executor);
@@ -47,10 +53,13 @@ public final class ThreadExecutorMap {
     /**
      * Decorate the given {@link Executor} and ensure {@link #currentExecutor()} will return {@code eventExecutor}
      * when called from within the {@link Runnable} during execution.
+     *
+     * 装饰给定的Executor，保证#currentExecutor()将返回eventExecutor，在执行期间从Runnable内部被调用。
      */
     public static Executor apply(final Executor executor, final EventExecutor eventExecutor) {
         ObjectUtil.checkNotNull(executor, "executor");
         ObjectUtil.checkNotNull(eventExecutor, "eventExecutor");
+        // 创建一个新的Executor，使用eventExecutor来执行提交到创建的Executor中执行的command。
         return new Executor() {
             @Override
             public void execute(final Runnable command) {
@@ -62,6 +71,10 @@ public final class ThreadExecutorMap {
     /**
      * Decorate the given {@link Runnable} and ensure {@link #currentExecutor()} will return {@code eventExecutor}
      * when called from within the {@link Runnable} during execution.
+     *
+     * 装饰给定的Runnable，保证#currentExecutor()将返回eventExecutor，当被从在Runnable执行期间中调用。
+     *
+     * NOTE 这个方法，实际上是为了使用#currentExecutor()来执行command。
      */
     public static Runnable apply(final Runnable command, final EventExecutor eventExecutor) {
         ObjectUtil.checkNotNull(command, "command");
@@ -71,6 +84,7 @@ public final class ThreadExecutorMap {
             public void run() {
                 setCurrentEventExecutor(eventExecutor);
                 try {
+                    // run方法的执行，应该会使用到#currentExecutor()
                     command.run();
                 } finally {
                     setCurrentEventExecutor(null);
@@ -82,6 +96,8 @@ public final class ThreadExecutorMap {
     /**
      * Decorate the given {@link ThreadFactory} and ensure {@link #currentExecutor()} will return {@code eventExecutor}
      * when called from within the {@link Runnable} during execution.
+     *
+     * 装饰给定的ThreadFactory，保证#currentExecutor()将返回eventExecutor，当被从Runnable执行期间调用。
      */
     public static ThreadFactory apply(final ThreadFactory threadFactory, final EventExecutor eventExecutor) {
         ObjectUtil.checkNotNull(threadFactory, "command");

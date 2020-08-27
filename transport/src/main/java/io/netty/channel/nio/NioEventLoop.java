@@ -53,6 +53,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * 多路复用、事件循环
  *
  * SingleThreadEventLoop的实现类，它注册Channels到Selector中。因此实现了事件循环的多路复用。
+ *
+ * 继承了SingleThreadEventLoop，单线程执行taskQueue中的任务。
+ * 事件绑定线程（队列）来执行。
  */
 public final class NioEventLoop extends SingleThreadEventLoop {
 
