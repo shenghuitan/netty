@@ -241,9 +241,11 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
                                   boolean useCacheForAllThreads, int directMemoryCacheAlignment) {
         super(preferDirect);
         threadCache = new PoolThreadLocalCache(useCacheForAllThreads);
+        // 缓冲区的分配器把内存块分配大小定义成三个：微块、小块、正常块
         this.tinyCacheSize = tinyCacheSize;
         this.smallCacheSize = smallCacheSize;
         this.normalCacheSize = normalCacheSize;
+        // 验证chunkSize是否会溢出，chunkSize = pageSize << maxOrder
         chunkSize = validateAndCalculateChunkSize(pageSize, maxOrder);
 
         checkPositiveOrZero(nHeapArena, "nHeapArena");
@@ -386,6 +388,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
 
     /**
      * Default maximum order - System Property: io.netty.allocator.maxOrder - default 11
+     * 一个chunk的大小 = pageSize << maxOrder
      */
     public static int defaultMaxOrder() {
         return DEFAULT_MAX_ORDER;
@@ -428,6 +431,8 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator implements 
 
     /**
      * Return {@code true} if direct memory cache alignment is supported, {@code false} otherwise.
+     *
+     * 返回true，若直接内存缓存对齐被支持。否则返回false。
      */
     public static boolean isDirectMemoryCacheAlignmentSupported() {
         return PlatformDependent.hasUnsafe();

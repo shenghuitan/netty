@@ -93,6 +93,11 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     /**
      * Create new instance
      *
+     * 创建一个缓冲区分配器实例。
+     *
+     * NOTE 构造器的创建过程，是在不断试探系统的各个参数是否支持的过程，条件都符合的话，就把必要的条件设置成true。
+     * 所以，在上层来看，不需要太过于关心是使用了Pool，或者Unpool缓冲区分配器。
+     *
      * @param preferDirect {@code true} if {@link #buffer(int)} should try to allocate a direct buffer rather than
      *                     a heap buffer
      */

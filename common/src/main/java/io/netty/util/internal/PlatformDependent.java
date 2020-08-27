@@ -273,6 +273,7 @@ public final class PlatformDependent {
         LINUX_OS_CLASSIFIERS = Collections.unmodifiableSet(availableClassifiers);
     }
 
+    // 是否有直接缓冲区的无清除（NoCleaner）构造器
     public static boolean hasDirectBufferNoCleanerConstructor() {
         return PlatformDependent0.hasDirectBufferNoCleanerConstructor();
     }
@@ -328,6 +329,8 @@ public final class PlatformDependent {
     /**
      * Return {@code true} if {@code sun.misc.Unsafe} was found on the classpath and can be used for accelerated
      * direct memory access.
+     *
+     * 返回true，如果{@code sun.misc.Unsafe}在classpath没有被发现，可以被用于加速直接内存访问。
      */
     public static boolean hasUnsafe() {
         return UNSAFE_UNAVAILABILITY_CAUSE == null;

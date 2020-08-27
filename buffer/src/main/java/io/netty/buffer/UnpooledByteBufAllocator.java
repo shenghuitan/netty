@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 
 /**
  * Simplistic {@link ByteBufAllocator} implementation that does not pool anything.
+ *
+ * 简单化ByteBufAllocator的实现，没有任何池化任何东西。
  */
 public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator implements ByteBufAllocatorMetricProvider {
 
@@ -32,6 +34,8 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
 
     /**
      * Default instance which uses leak-detection for direct buffers.
+     *
+     * 默认实例，用来给直接缓冲区检查泄漏。
      */
     public static final UnpooledByteBufAllocator DEFAULT =
             new UnpooledByteBufAllocator(PlatformDependent.directBufferPreferred());
@@ -39,8 +43,11 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
     /**
      * Create a new instance which uses leak-detection for direct buffers.
      *
+     * 创建一个实例，用来给直接缓冲区检查泄漏。
+     *
      * @param preferDirect {@code true} if {@link #buffer(int)} should try to allocate a direct buffer rather than
      *                     a heap buffer
+     *                     true，如果#buffer(int)方法应该尝试分配一个直接缓冲区，而不是一个堆缓冲区。
      */
     public UnpooledByteBufAllocator(boolean preferDirect) {
         this(preferDirect, false);
@@ -49,11 +56,17 @@ public final class UnpooledByteBufAllocator extends AbstractByteBufAllocator imp
     /**
      * Create a new instance
      *
+     * 创建一个非池化的缓冲区分配器。
+     *
      * @param preferDirect {@code true} if {@link #buffer(int)} should try to allocate a direct buffer rather than
      *                     a heap buffer
+     *                     true：更倾向于分配直接缓冲区，而不是堆缓冲区
+     *
      * @param disableLeakDetector {@code true} if the leak-detection should be disabled completely for this
      *                            allocator. This can be useful if the user just want to depend on the GC to handle
      *                            direct buffers when not explicit released.
+     *                            true：不允许检查泄漏。这个分配器的泄漏检查应该被完全禁止。这可以很有用，如果用户仅仅想
+     *                                  依赖GC去处理直接缓冲区，当没有显性的释放的时候。
      */
     public UnpooledByteBufAllocator(boolean preferDirect, boolean disableLeakDetector) {
         this(preferDirect, disableLeakDetector, PlatformDependent.useDirectBufferNoCleaner());
