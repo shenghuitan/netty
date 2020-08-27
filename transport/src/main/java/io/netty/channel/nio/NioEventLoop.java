@@ -401,6 +401,19 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * 替换当前的event loop的Selector，使用新创建的Selectors来解决臭名昭著的epoll CPU 100%的bug。
      *
      * NOTE 为什么epoll会导致CPU 100%的bug？
+     *
+     * 参考：
+     * https://cloud.tencent.com/developer/article/1543810
+     * https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6670302
+     *
+     * 连接出现了RST，因为poll和epoll对于突然中断的连接socket会对返回的eventSet事件集合置为POLLHUP或者POLLERR，
+     * eventSet事件集合发生了变化，这就导致Selector会被唤醒，进而导致CPU 100%问题。
+     * 根本原因就是JDK没有处理好这种情况，比如SelectionKey中就没定义有异常事件的类型。
+     *
+     * 问题原因：
+     * 不是因为有事件，而是epoll轮询到了java nio没有定义的事件，导致在socket失效的时候，一直都在被轮询到，但是
+     * 又没有被拿出去处理，从而引发了死循环。
+     * 也就是说，java nio能扔掉这些未定义的事件的话，也是不会有这个问题的。但是这个修改，会涉及到java nio的一整套体系。
      */
     public void rebuildSelector() {
         if (!inEventLoop()) {
