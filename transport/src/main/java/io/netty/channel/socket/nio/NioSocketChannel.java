@@ -53,6 +53,8 @@ import static io.netty.channel.internal.ChannelUtils.MAX_BYTES_PER_GATHERING_WRI
 
 /**
  * {@link io.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
+ *
+ * SocketChannel 使用NIO selector为基础的实现。
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
@@ -64,7 +66,22 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
              *  Use the {@link SelectorProvider} to open {@link SocketChannel} and so remove condition in
              *  {@link SelectorProvider#provider()} which is called by each SocketChannel.open() otherwise.
              *
+             *  使用SelectorProvider来打开SocketChannel，以在SelectorProvider#provider()中删除竞争条件，原条件
+             *  在每一个SocketChannel.open()调用中存在。
+             *
              *  See <a href="https://github.com/netty/netty/issues/2308">#2308</a>.
+             *
+             *  原代码：return java.nio.channels.SocketChannel.open();
+             *
+             *  此方法，在每一个创建channel的时候，都会使用到synchronized锁，全局阻塞，降低了性能。
+             *  通过使用SelectorProvider.openSocketChannel()，去掉这个没必要的锁，避免了这个问题。
+             *
+             *  NOTE：
+             *  新版本的代码已经解决了这个问题，同样通过SelectorProvider来打开SocketChannel。
+             *
+             *     public static SocketChannel open() throws IOException {
+             *         return SelectorProvider.provider().openSocketChannel();
+             *     }
              */
             return provider.openSocketChannel();
         } catch (IOException e) {
@@ -454,6 +471,13 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return new NioSocketChannelUnsafe();
     }
 
+    /**
+     * Unsafe系列的定义，都有对应的Channel系列。如：
+     * io.netty.channel.socket.nio.NioSocketChannel.NioSocketChannelUnsafe extends NioByteUnsafe
+     * io.netty.channel.nio.AbstractNioByteChannel.NioByteUnsafe extends AbstractNioUnsafe
+     * io.netty.channel.nio.AbstractNioChannel.AbstractNioUnsafe extends AbstractUnsafe implements NioUnsafe
+     * io.netty.channel.AbstractChannel.AbstractUnsafe implements Unsafe
+     */
     private final class NioSocketChannelUnsafe extends NioByteUnsafe {
         @Override
         protected Executor prepareToClose() {
@@ -462,6 +486,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
                     // We need to cancel this key of the channel so we may not end up in a eventloop spin
                     // because we try to read or write until the actual close happens which may be later due
                     // SO_LINGER handling.
+                    // 我们需要取消channel的这个key，因此我们可能不会结束eventloop转变，
+                    // 因为我们尝试读写直到实际关闭发生，它可能延后因为SO_LINGER的处理。
                     // See https://github.com/netty/netty/issues/4449
                     doDeregister();
                     return GlobalEventExecutor.INSTANCE;

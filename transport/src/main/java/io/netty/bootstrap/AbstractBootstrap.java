@@ -330,6 +330,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         Channel channel = null;
         try {
             channel = channelFactory.newChannel();  // new NioServerSocketChannel()
+                                                    // new NioSocketChannel()
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {

@@ -59,8 +59,13 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
     /**
      * Create a new instance
      *
+     * 创建一个实例
+     *
      * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
+     *                          创建此实例父Channel。可能为null
+     *
      * @param ch                the underlying {@link SelectableChannel} on which it operates
+     *                          操作的底层的SelectableChannel
      */
     protected AbstractNioByteChannel(Channel parent, SelectableChannel ch) {
         super(parent, ch, SelectionKey.OP_READ);
