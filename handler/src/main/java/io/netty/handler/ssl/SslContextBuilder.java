@@ -31,6 +31,7 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static io.netty.util.internal.EmptyArrays.EMPTY_STRINGS;
@@ -570,7 +571,7 @@ public final class SslContextBuilder {
         if (forServer) {
             return SslContext.newServerContextInternal(provider, sslContextProvider, trustCertCollection,
                 trustManagerFactory, keyCertChain, key, keyPassword, keyManagerFactory,
-                ciphers, cipherFilter, apn, sessionCacheSize, sessionTimeout, clientAuth, protocols, startTls,
+                ciphers, cipherFilter, apn, sessionCacheSize, sessionTimeout, /**/clientAuth, protocols, /**/startTls,
                 enableOcsp, keyStoreType);
         } else {
             return SslContext.newClientContextInternal(provider, sslContextProvider, trustCertCollection,
@@ -589,4 +590,31 @@ public final class SslContextBuilder {
         }
         return list.toArray(prototype);
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SslContextBuilder{");
+        sb.append("forServer=").append(forServer);
+        sb.append(", provider=").append(provider);
+        sb.append(", sslContextProvider=").append(sslContextProvider);
+        sb.append(", trustCertCollection=").append(Arrays.toString(trustCertCollection));
+        sb.append(", trustManagerFactory=").append(trustManagerFactory);
+        sb.append(", keyCertChain=").append(Arrays.toString(keyCertChain));
+        sb.append(", key=").append(key);
+        sb.append(", keyPassword='").append(keyPassword).append('\'');
+        sb.append(", keyManagerFactory=").append(keyManagerFactory);
+        sb.append(", ciphers=").append(ciphers);
+        sb.append(", cipherFilter=").append(cipherFilter);
+        sb.append(", apn=").append(apn);
+        sb.append(", sessionCacheSize=").append(sessionCacheSize);
+        sb.append(", sessionTimeout=").append(sessionTimeout);
+        sb.append(", clientAuth=").append(clientAuth);
+        sb.append(", protocols=").append(Arrays.toString(protocols));
+        sb.append(", startTls=").append(startTls);
+        sb.append(", enableOcsp=").append(enableOcsp);
+        sb.append(", keyStoreType='").append(keyStoreType).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
 }
