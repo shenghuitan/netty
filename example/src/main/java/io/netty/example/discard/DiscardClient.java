@@ -26,6 +26,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Keeps sending random data to the specified address.
@@ -33,6 +35,12 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
  * 不断给服务端发送随机数据，测试大批量的数据传输。
  */
 public final class DiscardClient {
+
+    private static Logger logger = LoggerFactory.getLogger(DiscardClient.class);
+
+    static {
+        System.setProperty("ssl", "");
+    }
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static final String HOST = System.getProperty("host", "127.0.0.1");
@@ -43,8 +51,12 @@ public final class DiscardClient {
         // Configure SSL.
         final SslContext sslCtx;
         if (SSL) {
-            sslCtx = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+            SslContextBuilder sslContextBuilder = SslContextBuilder.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE);
+            logger.info("sslContextBuilder:{}", sslContextBuilder);
+
+            sslCtx = sslContextBuilder.build();
+            logger.info("sslCtx:{}", sslCtx);
         } else {
             sslCtx = null;
         }

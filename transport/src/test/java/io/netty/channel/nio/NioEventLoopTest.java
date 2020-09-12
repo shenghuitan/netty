@@ -175,10 +175,12 @@ public class NioEventLoopTest extends AbstractEventLoopTest {
                 @Override
                 public void channelReady(SocketChannel ch, SelectionKey key) {
                     latch.countDown();
+                    new RuntimeException().printStackTrace();
                 }
 
                 @Override
                 public void channelUnregistered(SocketChannel ch, Throwable cause) {
+                    new RuntimeException().printStackTrace();
                 }
             });
 

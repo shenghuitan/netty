@@ -28,11 +28,21 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 /**
  * Discards any incoming data.
  */
 public final class DiscardServer {
+
+    private static Logger logger = LoggerFactory.getLogger(DiscardServer.class);
+
+    static {
+        System.setProperty("ssl", "");
+    }
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static final int PORT = Integer.parseInt(System.getProperty("port", "8009"));
@@ -42,7 +52,15 @@ public final class DiscardServer {
         final SslContext sslCtx;
         if (SSL) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
-            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+            File certificate = ssc.certificate();
+            File privateKey = ssc.privateKey();
+            logger.info("certificate:{}, privateKey:{}", certificate, privateKey);
+
+            SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(certificate, privateKey);
+            logger.info("sslContextBuilder:{}", sslContextBuilder);
+
+            sslCtx = sslContextBuilder.build();
+            logger.info("sslCtx:{}", sslCtx);
         } else {
             sslCtx = null;
         }
