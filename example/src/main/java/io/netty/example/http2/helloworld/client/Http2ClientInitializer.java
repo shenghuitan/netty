@@ -26,14 +26,7 @@ import io.netty.handler.codec.http.HttpClientUpgradeHandler;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http2.DefaultHttp2Connection;
-import io.netty.handler.codec.http2.DelegatingDecompressorFrameListener;
-import io.netty.handler.codec.http2.Http2ClientUpgradeCodec;
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2FrameLogger;
-import io.netty.handler.codec.http2.HttpToHttp2ConnectionHandler;
-import io.netty.handler.codec.http2.HttpToHttp2ConnectionHandlerBuilder;
-import io.netty.handler.codec.http2.InboundHttp2ToHttpAdapterBuilder;
+import io.netty.handler.codec.http2.*;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.handler.ssl.SslContext;
@@ -62,6 +55,7 @@ public class Http2ClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         final Http2Connection connection = new DefaultHttp2Connection(false);
+        connection.stream(1000000);
         connectionHandler = new HttpToHttp2ConnectionHandlerBuilder()
                 .frameListener(new DelegatingDecompressorFrameListener(
                         connection,
@@ -71,6 +65,8 @@ public class Http2ClientInitializer extends ChannelInitializer<SocketChannel> {
                                 .build()))
                 .frameLogger(logger)
                 .connection(connection)
+                .initialSettings(Http2Settings.defaultSettings().maxHeaderListSize(1000000).maxConcurrentStreams(1000000).maxFrameSize(1000000))
+                .encoderEnforceMaxConcurrentStreams(true)
                 .build();
         responseHandler = new HttpResponseHandler();
         settingsHandler = new Http2SettingsHandler(ch.newPromise());

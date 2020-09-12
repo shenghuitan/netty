@@ -19,10 +19,13 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.example.util.Timer;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http2.HttpConversionUtil;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.PlatformDependent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Iterator;
@@ -35,7 +38,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     private final Map<Integer, Entry<ChannelFuture, ChannelPromise>> streamidPromiseMap;
+    private Timer timer = Timer.init();
 
     public HttpResponseHandler() {
         // Use a concurrent map because we add and iterate from the main thread (just for the purposes of the example),
@@ -104,7 +110,10 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpRes
                 int contentLength = content.readableBytes();
                 byte[] arr = new byte[contentLength];
                 content.readBytes(arr);
-                System.out.println(new String(arr, 0, contentLength, CharsetUtil.UTF_8));
+                timer.mark();
+                String text = new String(arr, 0, contentLength, CharsetUtil.UTF_8);
+                long cost = System.currentTimeMillis() - Long.parseLong(text.split("=")[1]);
+                logger.info("text:{}, cost:{}, size:{}, total:{}", text, cost, timer.size(), timer.total());
             }
 
             entry.getValue().setSuccess();
