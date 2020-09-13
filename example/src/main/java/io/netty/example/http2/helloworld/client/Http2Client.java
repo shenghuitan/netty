@@ -16,12 +16,12 @@ package io.netty.example.http2.helloworld.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.http2.Http2Consts;
+import io.netty.example.util.Counter;
+import io.netty.example.util.Timer;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netty.buffer.Unpooled.wrappedBuffer;
 import static io.netty.handler.codec.http.HttpMethod.GET;
@@ -83,12 +84,15 @@ public final class Http2Client {
         new Http2Client().main0();
     }
 
-    int times = 0;
-    int limit = 100000;
-    int streams = 100;
+    private Counter counter = new Counter();
+
+    final int limit = 100_000;
+    final int streams = 128 * 2;
     int streamId = 3;
 
     LinkedBlockingQueue<Long> queue = new LinkedBlockingQueue<Long>();
+    AtomicLong totalCost = new AtomicLong(0L);
+    Timer successTimer = Timer.init();
 
     public void main0() throws Exception {
         // Configure SSL.
@@ -140,15 +144,8 @@ public final class Http2Client {
             final AsciiString hostName = new AsciiString(HOST + ':' + PORT);
             System.err.println("Sending request(s)...");
 
-            final GenericFutureListener listener = new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    queue.offer(1L);
-                }
-            };
-
             for (int i = 0; i < streams; i++) {
-                send(scheme, hostName, responseHandler, channel, listener);
+                send(scheme, hostName, responseHandler, channel, new PromiseListener());
             }
 
             channel.flush();
@@ -156,10 +153,10 @@ public final class Http2Client {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (times < limit) {
+                    while (counter.sent.get() < limit) {
                         try {
                             queue.take();
-                            send(scheme, hostName, responseHandler, channel, listener);
+                            send(scheme, hostName, responseHandler, channel, new PromiseListener());
                         } catch (InterruptedException e) {
                             logger.error("", e);
                         }
@@ -172,34 +169,55 @@ public final class Http2Client {
                 public void run() {
                     while (true) {
                         responseHandler.awaitResponses(5, TimeUnit.SECONDS);
-                        logger.info("Finished HTTP/2 request(s), times:{}", times);
+                        logger.info("Finished HTTP/2 request(s), streams:{}, totalCost:{}, averageCost:{}, counter:{}, successTimer:{}",
+                                streams, totalCost, totalCost.get() / counter.succeed.get(), counter, successTimer);
 
                         try {
                             TimeUnit.SECONDS.sleep(1);
                         } catch (InterruptedException e) {
                             logger.error("", e);
+                            return;
                         }
                     }
                 }
             }).start();
 
             // Wait until the connection is closed.
-//            channel.closeFuture().syncUninterruptibly();
-
-            channel.closeFuture().sync();
+            channel.closeFuture().syncUninterruptibly();
         } finally {
             workerGroup.shutdownGracefully();
         }
     }
 
+    public class FutureListener implements GenericFutureListener<Future<? super Void>> {
+        @Override
+        public void operationComplete(Future<? super Void> future) throws Exception {
+            counter.sent.getAndIncrement();
+        }
+    }
+
+    public class PromiseListener implements GenericFutureListener<Future<? super Void>> {
+        Timer t0 = Timer.init();
+        @Override
+        public void operationComplete(Future<? super Void> future) throws Exception {
+            t0.mark();
+            successTimer.mark();
+            counter.succeed.getAndIncrement();
+            totalCost.getAndAdd(t0.cost());
+            queue.offer(1L);
+        }
+    }
+
     public void send(HttpScheme scheme, AsciiString hostName, HttpResponseHandler responseHandler,
                      Channel channel, GenericFutureListener listener) {
-        if (times >= limit) {
+        counter.received.getAndIncrement();
+
+        if (counter.received.get() > limit) {
             logger.info("send end...");
-//            return;
+            return;
         }
 
-        times++;
+        counter.read.getAndIncrement();
 
         if (URL != null) {
             // Create a simple GET request.
@@ -209,7 +227,13 @@ public final class Http2Client {
             request.headers().add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
             request.headers().add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.DEFLATE);
 
-            responseHandler.put(streamId, channel.write(request), channel.newPromise().addListener(listener));
+            ChannelPromise promise = channel.newPromise();
+            promise.addListener(new PromiseListener());
+
+            ChannelFuture future = channel.write(request);
+            future.addListener(new FutureListener());
+
+            responseHandler.put(streamId, future, promise);
             streamId = (streamId + 2);
         }
         if (URL2 != null) {

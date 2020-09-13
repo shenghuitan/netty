@@ -55,7 +55,6 @@ public class Http2ClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         final Http2Connection connection = new DefaultHttp2Connection(false);
-        connection.stream(1000000);
         connectionHandler = new HttpToHttp2ConnectionHandlerBuilder()
                 .frameListener(new DelegatingDecompressorFrameListener(
                         connection,
@@ -63,9 +62,8 @@ public class Http2ClientInitializer extends ChannelInitializer<SocketChannel> {
                                 .maxContentLength(maxContentLength)
                                 .propagateSettings(true)
                                 .build()))
-                .frameLogger(logger)
+//                .frameLogger(logger)
                 .connection(connection)
-                .initialSettings(Http2Settings.defaultSettings().maxHeaderListSize(1000000).maxConcurrentStreams(1000000).maxFrameSize(1000000))
                 .encoderEnforceMaxConcurrentStreams(true)
                 .build();
         responseHandler = new HttpResponseHandler();
