@@ -180,6 +180,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
         this.maxPendingTasks = DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
+        // parent创建了executor
+        // eventExecutor为当前SingleThreadEventExecutor
+        // 也就是把父管理器创建的线程执行器与当前SingleThreadEventExecutor绑定了起来，通过threadlocal方法可以拿到当前的
+        // SingleThreadEventExecutor。
+        // 为什么要这样做呢？
+        // 这里实际上是使用了executor来执行SingleThreadEventExecutor.this.run()方法，即其子类，如：NioEventLoop的run方法。
         this.executor = ThreadExecutorMap.apply(executor, this);
         this.taskQueue = ObjectUtil.checkNotNull(taskQueue, "taskQueue");
         this.rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, "rejectedHandler");
@@ -924,6 +930,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     /**
+     * 简单来理解就是，SingleThreadEventExecutor才有绑定的队列，当前线程，可以持有很多个SingleThreadEventExecutor
+     * 的实例，所以可以把task放到任意一个SingleThreadEventExecutor中执行，也就是任意一个队列中执行。
+     * 但是，能消费队列的，只能是SingleThreadEventExecutor所绑定的Executor。
+     * SingleThreadEventExecutor是建立起队列和Executor的关系的桥梁。
+     *
+     * 假设，这里的执行线程，其实应该是BossGroup，用以来分配task到不同的WorkerGroup？
      *
      * @param task  待添加到this.taskQueue的任务
      * @param immediate 是否即时唤醒执行线程来执行，当task非由当前线程来执行的时候。

@@ -60,9 +60,12 @@ public final class ThreadExecutorMap {
         ObjectUtil.checkNotNull(executor, "executor");
         ObjectUtil.checkNotNull(eventExecutor, "eventExecutor");
         // 创建一个新的Executor，使用eventExecutor来执行提交到创建的Executor中执行的command。
+        // 这里保证在当前线程获取事件执行器时，必然返回eventExecutor。
+        // 反过来判断，若eventExecutor为空，则需要绑定一个。
         return new Executor() {
             @Override
             public void execute(final Runnable command) {
+                // command与eventExecutor是绑定的，但是executor与command没有任何关系
                 executor.execute(apply(command, eventExecutor));
             }
         };
@@ -85,8 +88,10 @@ public final class ThreadExecutorMap {
                 setCurrentEventExecutor(eventExecutor);
                 try {
                     // run方法的执行，应该会使用到#currentExecutor()
+                    // 此方法实际上是会循环执行，直到线程池shutdown才结束循环，而退出。
                     command.run();
                 } finally {
+                    // 这里应该理解为，释放eventExecutor
                     setCurrentEventExecutor(null);
                 }
             }

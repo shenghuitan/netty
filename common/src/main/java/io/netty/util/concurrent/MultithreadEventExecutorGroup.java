@@ -88,7 +88,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
 
-        // 默认为每一个任务，创建一个新的Thread来执行。
+        // 默认为每一个任务执行器，创建一个线程来执行。
         if (executor == null) {
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }

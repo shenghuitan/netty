@@ -151,6 +151,14 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         }
     }
 
+    /**
+     * NioEventLoopGroup的Child是NioEventLoop
+     *
+     * @param executor  NioEventLoop对应的执行器，在线程开始执行前，都不会有实质的操作。
+     * @param args      每一个元素不同类型，下标固定类型的数组
+     * @return
+     * @throws Exception
+     */
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
         // 默认是创建一个LinkedBlockingQueue，存储要执行的Task。
