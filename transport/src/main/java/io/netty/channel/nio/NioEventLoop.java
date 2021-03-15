@@ -543,7 +543,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                             // so use of lazySet is ok (no race condition)
                             // 此更新仅帮助不必要的阻塞selector wakeup，因此使用lazySet是ok的。
                             // （没有竞争条件）
-                            // NOTE 还不是很理解这里这样做的意义？
+                            // NOTE 还不是很理解这里这样做的意义？解释如下：
+                            // 1、当前线程可能被其它线程唤醒，通过wakeup方法
+                            // 2、在这里已经可以明确，当前线程的队列已经没有待执行的任务；select方法已在等待新事件
+                            // 所以这里的意义是，降低内耗。
                             nextWakeupNanos.lazySet(AWAKE);
                         }
                         // fall through
@@ -813,6 +816,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
             // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead
             // to a spin loop
+            // 这里开始进入Netty的事件流转，Pipeline等IO模型。
+            // 读取对应的数据到Buffer，Queue，编解码等处理。
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
                 unsafe.read();
             }
