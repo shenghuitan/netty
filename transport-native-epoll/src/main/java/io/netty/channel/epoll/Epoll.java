@@ -36,6 +36,8 @@ public final class Epoll {
             FileDescriptor epollFd = null;
             FileDescriptor eventFd = null;
             try {
+                // 区分了epollFd和eventFd：
+                // NOTE epollFd用以处理accept，eventFd处理读写？
                 epollFd = Native.newEpollCreate();
                 eventFd = Native.newEventFd();
             } catch (Throwable t) {

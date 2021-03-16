@@ -112,6 +112,7 @@ public final class Native {
         return new FileDescriptor(epollCreate());
     }
 
+    // 这里涉及到本地代码的关联，Java仅是C的上层包装？
     private static native int epollCreate();
 
     /**
