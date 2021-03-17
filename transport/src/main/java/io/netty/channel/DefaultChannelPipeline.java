@@ -191,7 +191,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         tail = new TailContext(this);
         head = new HeadContext(this);
 
-        head.next = tail;   // Pipeline的初始化，首位相接
+        head.next = tail;   // Pipeline的初始化，首尾相接
         tail.prev = head;
     }
 
@@ -778,6 +778,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    // 第一阶段：这里是Boss线程在执行
     final void invokeHandlerAddedIfNeeded() {
         assert channel.eventLoop().inEventLoop();
         if (firstRegistration) {
@@ -948,6 +949,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return buf.toString();
     }
 
+    /**
+     * 第一阶段：boss线程注册ServerSocket完成
+     * @return
+     */
     @Override
     public final ChannelPipeline fireChannelRegistered() {
         AbstractChannelHandlerContext.invokeChannelRegistered(head);

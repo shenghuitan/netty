@@ -466,8 +466,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         /**
          * NOTE 这里是具体的register逻辑。
          *
+         *
+         *
          * @param eventLoop 当前执行的EventLoop
+         *                  在NioServerSocketChannel初始化时，这个是BossGroup的SingleThreadEventLoop。
+         *
          * @param promise   返回的结果
+         *                  绑定了NioServerSocketChannel和SingleThreadEventLoop。
          */
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
@@ -483,15 +488,21 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 return;
             }
 
+            // NOTE 执行NioServerSocketChannel与SingleThreadEventLoop的绑定
             AbstractChannel.this.eventLoop = eventLoop;
 
             // 这里保证了每一个task，都会被其对应的线程来执行，当前线程非对应的线程，则把task放入到对应的线程绑定的taskQueue
             // 中，再由当前线程wakeup，使task开始被执行。
 
+            // TODO 启动后，main线程会不会执行到这里？
+            // 会，初始化到这里，并没有发生线程的切换，所以在初始化时，这里会返回false。
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
                 try {
+                    // 第一阶段：这里意味着通过Boss线程来执行register0。
+                    // 这里execute的实现为，包装成Task后，offer到taskQueue。
+                    // NioEventLoop.run()会无限循环poll taskQueue来执行。
                     eventLoop.execute(new Runnable() {
                         @Override
                         public void run() {

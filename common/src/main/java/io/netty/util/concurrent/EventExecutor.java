@@ -48,6 +48,9 @@ public interface EventExecutor extends EventExecutorGroup {
      * 调用inEventLoop(Thread)方法来查看当前线程是否在此EventExecutor中管理。
      *
      * NOTE 对这个方法一直有疑问！！！
+     *
+     * 是否在事件Loop中，即是否Worker。
+     * 若为Boss，返回false；为Worker，返回true。
      */
     boolean inEventLoop();
 

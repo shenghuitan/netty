@@ -644,6 +644,8 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                  *
                  *          返回一个key，表示使用给定的channel的selector的注册结果
                  */
+                // NOTE 第一阶段：这里把NioServerSocketChannel注册到了Selector的attachment
+                // 后续从selectedKey获取到的，将是NioServerSocketChannel
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {

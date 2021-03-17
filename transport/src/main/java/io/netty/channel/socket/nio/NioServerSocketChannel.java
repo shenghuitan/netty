@@ -151,13 +151,17 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
         // 创建和初始化pipeline，设置非阻塞，关注accept事件
+        // NOTE ServerSocket仅关注连接的被动建立，当accept事件发生时，其捕获的对象必然是ServerSocket，
+        // 进而引出了当前对象：NioServerSocketChannel。
         super(null, channel, SelectionKey.OP_ACCEPT);
 
         // this.socket = ServerSocketAdaptor.create(this);
         ServerSocket serverSocket = javaChannel().socket();
 
-        // NOTE 这里会配置很多的默认参数
+        // NOTE 这里会配置很多的默认参数，其实并不重要！
         // 初始化阶段，配置的参数不多，一般为连接时间，和默认读写缓冲区大小
+        // Netty channel（NioServerSocketChannel）持有Netty config（NioServerSocketChannelConfig）
+        // Netty config持有Netty channel（NioServerSocketChannel）和原生ServerSocket
         config = new NioServerSocketChannelConfig(this, serverSocket);
     }
 
@@ -215,6 +219,8 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
+        // SocketChannel对于Server和Client来说，都是对等的。
+        // Server由于需要监听，增加了ServerSocketChannel而已；由accept操作得到的，便是Server和Client对等的SocketChannel。
         SocketChannel ch = SocketUtils.accept(javaChannel());
 
         try {
