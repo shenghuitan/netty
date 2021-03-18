@@ -145,7 +145,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     final AbstractChannelHandlerContext tail;
 
     private final Channel channel;
-    private final ChannelFuture succeededFuture;
+    private final ChannelFuture succeededFuture;    // 这里可能是确定executor的地方
     private final VoidChannelPromise voidPromise;
     private final boolean touch = ResourceLeakDetector.isEnabled();
 
@@ -178,8 +178,8 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private boolean registered;
 
     /**
-     * ServerSocketChannel
-     * SocketChannel
+     * NioServerSocketChannel
+     * NioSocketChannel
      *
      * @param channel
      */

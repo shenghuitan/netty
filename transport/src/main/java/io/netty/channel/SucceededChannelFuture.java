@@ -28,6 +28,7 @@ final class SucceededChannelFuture extends CompleteChannelFuture {
      * Creates a new instance.
      *
      * @param channel the {@link Channel} associated with this future
+     * @param executor  当channel为NioSocketChannel时，executor为null
      */
     SucceededChannelFuture(Channel channel, EventExecutor executor) {
         super(channel, executor);

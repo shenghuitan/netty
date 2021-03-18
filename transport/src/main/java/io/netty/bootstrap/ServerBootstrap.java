@@ -84,6 +84,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
      *
      * 为父节点（acceptor）和子节点（client）设置EventLoopGroup。这些EventLoopGroup被用来处理所有的事件，
      * 以及ServerChannel和Channel的IO操作。
+     *
+     * @param parentGroup   BossGroup
+     * @param childGroup    WorkerGroup
      */
     public ServerBootstrap group(EventLoopGroup parentGroup, EventLoopGroup childGroup) {
         super.group(parentGroup);
@@ -136,24 +139,28 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
     /**
      * 初始化Channel的事件线程池、链路属性等
      *
-     * @param channel
+     * @param channel   对Server端而言，这里是NioServerSocketChannel
      */
     @Override
     void init(Channel channel) {
         setChannelOptions(channel, newOptionsArray(), logger);
         setAttributes(channel, attrs0().entrySet().toArray(EMPTY_ATTRIBUTE_ARRAY));
 
+        // pipeline在前面的Unsafe初始化时，已经创建了
         ChannelPipeline p = channel.pipeline();
 
-        final EventLoopGroup currentChildGroup = childGroup;
-        final ChannelHandler currentChildHandler = childHandler;
+        final EventLoopGroup currentChildGroup = childGroup;    // WorkerGroup
+        final ChannelHandler currentChildHandler = childHandler;    // Pipeline的Context的Handlers：addLast
         final Entry<ChannelOption<?>, Object>[] currentChildOptions;
         synchronized (childOptions) {
             currentChildOptions = childOptions.entrySet().toArray(EMPTY_OPTION_ARRAY);
         }
         final Entry<AttributeKey<?>, Object>[] currentChildAttrs = childAttrs.entrySet().toArray(EMPTY_ATTRIBUTE_ARRAY);
 
+        // NOTE 这里有可能是把NioSocketChannel绑定到WorkerGroup的地方
         p.addLast(new ChannelInitializer<Channel>() {
+            // 这个方法在初始化时一定被调用，在哪个地方被调用？
+            // 确认：在最后一个Register完成之后。
             @Override
             public void initChannel(final Channel ch) {
                 final ChannelPipeline pipeline = ch.pipeline();
@@ -165,6 +172,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 ch.eventLoop().execute(new Runnable() {
                     @Override
                     public void run() {
+                        // NOTE 区分点在这里：
+                        // 对Server端启动来说，channel是NioServerSocketChannel，绑定的Pipeline是main方法中handler()。
+                        // 顾名思义，handler()是BossGroup绑定的Handlers，childHandler()是WorkerGroup绑定的Handlers。
+                        // ServerBootstrapAcceptor是在NioSocketChannel创建后，指定其绑定的Executor的一个封装而已。
                         pipeline.addLast(new ServerBootstrapAcceptor(
                                 ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
                     }
@@ -225,6 +236,8 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             setChannelOptions(child, childOptions, logger);
             setAttributes(child, childAttrs);
 
+            // 这里标重点：这里是Server的Acceptor！
+            // 如果这里接收到的是一个NioSocketChannel，则是在绑定到WorkerGroup。
             try {
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override

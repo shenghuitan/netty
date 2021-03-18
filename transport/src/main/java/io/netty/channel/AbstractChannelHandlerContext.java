@@ -147,7 +147,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
 
     @Override
     public EventExecutor executor() {
+        // 首次调用为null值，初始化阶段
         if (executor == null) {
+            // 这里返回的channel是NioServerSocketChannel，还是NioSocketChannel？
             return channel().eventLoop();
         } else {
             return executor;

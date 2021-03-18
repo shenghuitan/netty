@@ -488,7 +488,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 return;
             }
 
-            // NOTE 执行NioServerSocketChannel与SingleThreadEventLoop的绑定
+            // Accept阶段：执行NioServerSocketChannel与SingleThreadEventLoop的绑定
+            // Socket Read阶段：执行NioSocketChannel与SingleThreadEventLoop的绑定
             AbstractChannel.this.eventLoop = eventLoop;
 
             // 这里保证了每一个task，都会被其对应的线程来执行，当前线程非对应的线程，则把task放入到对应的线程绑定的taskQueue
