@@ -55,10 +55,11 @@ public final class EchoServer {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
+             .channel(NioServerSocketChannel.class) // 将使用默认构造方法初始化
              .option(ChannelOption.SO_BACKLOG, 100)
-             .handler(new LoggingHandler(LogLevel.INFO))
-             .childHandler(new ChannelInitializer<SocketChannel>() {
+             .handler(new LoggingHandler(LogLevel.INFO))    // BossGroup绑定的Pipeline
+             .childHandler(new ChannelInitializer<SocketChannel>() {    // WorkerGroup绑定的Pipeline
+                 // 在所有Server端的Register完成后执行
                  @Override
                  public void initChannel(SocketChannel ch) throws Exception {
                      ChannelPipeline p = ch.pipeline();
@@ -71,6 +72,7 @@ public final class EchoServer {
              });
 
             // Start the server.
+            // main线程获取资源，启动端口监听
             ChannelFuture f = b.bind(PORT).sync();
 
             // Wait until the server socket is closed.
