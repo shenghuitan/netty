@@ -162,7 +162,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             // 这个方法在初始化时一定被调用，在哪个地方被调用？
             // 确认：在最后一个Register完成之后。
             @Override
-            public void initChannel(final Channel ch) {
+            public void initChannel(final Channel ch) { // 这个Channel是谁？ServerSocket或Socket？
                 final ChannelPipeline pipeline = ch.pipeline();
                 ChannelHandler handler = config.handler();
                 if (handler != null) {
@@ -176,6 +176,8 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                         // 对Server端启动来说，channel是NioServerSocketChannel，绑定的Pipeline是main方法中handler()。
                         // 顾名思义，handler()是BossGroup绑定的Handlers，childHandler()是WorkerGroup绑定的Handlers。
                         // ServerBootstrapAcceptor是在NioSocketChannel创建后，指定其绑定的Executor的一个封装而已。
+                        // 另外，所有的handler，都是单例共享；而Pipeline、Context则是每个SocketChannel独立创建实例。
+                        // 对Server而言，autoRead = true。
                         pipeline.addLast(new ServerBootstrapAcceptor(
                                 ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
                     }

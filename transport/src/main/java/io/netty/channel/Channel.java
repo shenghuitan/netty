@@ -279,6 +279,10 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
          * the {@link ChannelFuture} once the registration was complete.
          *
          * 注册ChannelPromise的Channel，通知ChannelFuture一旦注册完成。
+         *
+         * 对Server端而言：
+         * 在NioServerSocketChannel完成register之后，就开始等待OP_ACCEPT事件的到来了。
+         * 在NioSocketChannel完成register之后，开始等待OP_READ事件的到来。
          */
         void register(EventLoop eventLoop, ChannelPromise promise);
 

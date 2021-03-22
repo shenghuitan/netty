@@ -57,6 +57,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * ChannelOutboundHandler更多是与写操作关联，服务的初始化是自身的信息的建立，用ChannelInboundHandler会更合适。
  *
+ * 注解：
+ * 1、ChannelInitializer是一个ChannelHandler，在使用上与其它的ChannelHandler没有区别。
+ * 2、提供ChannelInitializer，是为了判断，当进程逻辑相对复杂时，哪些Handler应该添加到Pipeline，哪些不需要，封装了判断逻辑。
+ * 3、ChannelInitializer是一个临时的逻辑，一旦初始化完成，即废弃。
+ *
  * @param <C>   A sub-type of {@link Channel}
  */
 @Sharable
@@ -89,6 +94,12 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
      */
     protected abstract void initChannel(C ch) throws Exception;
 
+    /**
+     * 这里将调用initChannel(C ch)，并在完成后将其从Pipeline删除。
+     *
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings("unchecked")
     public final void channelRegistered(ChannelHandlerContext ctx) throws Exception {

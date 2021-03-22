@@ -23,6 +23,9 @@ public interface ChannelInboundHandler extends ChannelHandler {
 
     /**
      * The {@link Channel} of the {@link ChannelHandlerContext} was registered with its {@link EventLoop}
+     *
+     * 一般来说，此方法仅在初始化完成后被调用，一般情况下不会被调用。
+     * 也是作为ChannelInitializer#initChannel(C ch)方法的下游出口。
      */
     void channelRegistered(ChannelHandlerContext ctx) throws Exception;
 

@@ -83,6 +83,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     /**
      * 选择next event loop，执行register。
+     * NOTE 绑定NioServerSocketChannel与BoosGroup.SingleTheadEventLoop
      *
      * @param channel   ServerBootstrap -> ServerSocketChannel
      * @return

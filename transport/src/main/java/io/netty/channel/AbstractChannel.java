@@ -547,6 +547,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+                // NOTE
+                // NioServerSocketChannel：BossGroup的Pipeline的initChannel开始执行
+                // NioSocketChannel：？
+                // 此时，Channel中的ChannelHandler是一个ChannelInitializer。
                 pipeline.fireChannelRegistered();
 
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
